@@ -1,0 +1,3 @@
+#cloud-config
+runcmd:
+  - echo "Placeholder AWS cloud-init configuration"
