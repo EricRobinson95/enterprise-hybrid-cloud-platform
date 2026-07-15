@@ -1,274 +1,169 @@
-# Network Architecture
+# 03 - Network Architecture
+
+# Enterprise Hybrid Cloud Platform - Network Architecture
 
 ## Overview
 
-The Enterprise Hybrid Cloud Platform is designed as a production-style hybrid cloud environment that integrates an on-premises home lab with Amazon Web Services (AWS), Microsoft Azure, and Cloudflare.
+The Enterprise Hybrid Cloud Platform is a modern hybrid cloud environment designed to demonstrate enterprise networking, cloud infrastructure, cybersecurity, automation, and application deployment.
 
-The platform is designed using enterprise networking principles to provide secure public application hosting, centralized identity management, secure remote administration, and reliable connectivity between cloud and on-premises environments.
+The platform integrates Amazon Web Services (AWS), Microsoft Azure, Cloudflare, and an on-premises network into a secure, scalable, and highly available architecture.
 
-Each environment within the platform has a defined responsibility. Public-facing services are separated from internal infrastructure, administrative services are isolated from customer traffic, and all communication between environments is secured through encrypted VPN connectivity.
-
-The architecture emphasizes security, scalability, high availability, automation, and maintainability while providing a foundation for future technologies and services.
+Each environment has a dedicated responsibility while securely communicating through encrypted VPN connections.
 
 ---
 
-# Design Principles
+# Architecture Goals
 
-The Enterprise Hybrid Cloud Platform is designed around the following engineering principles:
+The network architecture has been designed to:
 
-- Security by Design
-- High Availability
-- Scalability
-- Infrastructure as Code (IaC)
-- Least Privilege Access
-- Defense in Depth
-- Hybrid Cloud Integration
-- Centralized Monitoring
-- Professional Documentation
+- Build a production-style hybrid cloud environment
+- Secure public-facing services
+- Separate workloads using network segmentation
+- Support cloud scalability
+- Enable centralized identity management
+- Provide secure remote administration
+- Integrate cloud and on-premises infrastructure
+- Support Infrastructure as Code (Terraform)
+- Enable automated deployments through GitHub Actions
 
 ---
 
 # High-Level Architecture
 
-The platform consists of four major environments that work together to deliver a secure and highly available infrastructure.
-
-- Cloudflare
-- Amazon Web Services (AWS)
-- Microsoft Azure
-- On-Premises Home Lab
-
-Each environment performs a specific role within the enterprise architecture.
+```
+                     Internet
+                          │
+                     Cloudflare
+                          │
+          ┌───────────────┴───────────────┐
+          │                               │
+      AWS Cloud                    Azure Cloud
+          │                               │
+          └──────────── VPN ──────────────┘
+                          │
+                 On-Premises Network
+```
 
 ---
 
-# Cloudflare
+# Platform Components
 
-Cloudflare serves as the public edge of the platform.
+## Cloudflare
+
+Cloudflare serves as the public entry point into the platform.
 
 Responsibilities include:
 
-- Public DNS
-- SSL/TLS certificate management
-- Content Delivery Network (CDN)
+- DNS
+- SSL/TLS
 - Web Application Firewall (WAF)
 - DDoS protection
-- Reverse proxy services
-
-All public traffic enters the platform through Cloudflare before being forwarded to the application hosted in AWS.
-
-This design prevents direct exposure of public infrastructure while improving security and application performance.
+- Reverse proxy
+- Content Delivery Network (CDN)
 
 ---
 
-# Amazon Web Services (AWS)
+## Amazon Web Services (AWS)
 
-AWS serves as the primary application hosting environment.
+AWS hosts the public-facing application platform.
 
-Responsibilities include:
+Primary responsibilities include:
 
-- Public web application hosting
-- React frontend
-- Python FastAPI backend
+- Containerized application hosting
+- Application networking
 - Database services
-- Application monitoring
-- Security Groups
-- Virtual Private Cloud (VPC)
+- Monitoring
+- Logging
 
-AWS is responsible for hosting all customer-facing services while maintaining secure communication with Azure and the on-premises environment.
-
----
-
-# Microsoft Azure
-
-Azure provides enterprise identity and administrative services.
-
-Responsibilities include:
-
-- Microsoft Identity Services
-- Active Directory integration
-- Administrative virtual machines
-- Internal DNS services
-- Azure Monitor
-- Virtual Network (VNet)
-
-Azure is isolated from public internet traffic and is primarily used for identity management and administrative workloads.
+Detailed AWS design is documented in **05-aws-network.md**.
 
 ---
 
-# On-Premises Infrastructure
+## Microsoft Azure
 
-The on-premises environment represents the enterprise headquarters and serves as the hybrid cloud integration point.
+Azure provides enterprise infrastructure services.
 
-Responsibilities include:
+Primary responsibilities include:
 
-- Home lab infrastructure
-- Windows Server
+- Microsoft Entra ID
+- Active Directory
 - DNS
-- DHCP
+- Windows Server
 - File services
-- Local network management
-- Future virtualization platform
-- Enterprise network services
+- Identity management
 
-The on-premises environment communicates securely with AWS and Azure through encrypted VPN connectivity.
+Detailed Azure design is documented in **06-azure-network.md**.
 
 ---
 
-# Hybrid Cloud Connectivity
+## On-Premises Network
 
-Secure communication between all environments is established through WireGuard VPN tunnels.
+The on-premises environment extends the cloud platform into a physical engineering lab.
 
-The VPN provides:
+Responsibilities include:
 
-- Encrypted communication
-- Secure administrative access
-- Private routing
-- Hybrid cloud connectivity
-- Secure management traffic
+- Infrastructure testing
+- Network administration
+- Local services
+- Hybrid connectivity
+- Future virtualization
 
-All management traffic remains on private encrypted connections and is separated from public application traffic.
-
----
-
-# Network Communication
-
-Public users access the platform using the following traffic flow:
-
-Internet
-
-↓
-
-Cloudflare
-
-↓
-
-AWS Web Application
-
-↓
-
-Python API
-
-↓
-
-Database
-
-Administrative traffic follows a separate path:
-
-Administrator
-
-↓
-
-VPN
-
-↓
-
-AWS
-
-↓
-
-Azure
-
-↓
-
-On-Premises Infrastructure
-
-Separating public and administrative traffic reduces the attack surface while improving overall security.
+The environment will also integrate the ClockworkPi uConsole as a portable field engineering workstation.
 
 ---
 
-# Security Architecture
+# Hybrid Connectivity
 
-Security is implemented using a layered defense strategy.
+AWS, Azure, and the on-premises network communicate using encrypted WireGuard VPN tunnels.
 
-Key security components include:
+Hybrid connectivity enables:
 
-- Cloudflare Web Application Firewall
-- DDoS protection
-- SSL/TLS encryption
-- AWS Security Groups
-- Azure Network Security Groups
-- Private subnets
-- VPN encryption
-- Least Privilege Access
-- Multi-Factor Authentication (MFA)
-- Identity-based administration
-
-Security controls are applied throughout every layer of the platform rather than relying on a single security mechanism.
+- Secure administration
+- Private resource access
+- Identity integration
+- Backup and recovery
+- Infrastructure management
 
 ---
 
-# High Availability
+# Network Design Principles
 
-The platform is designed to minimize downtime and improve service reliability.
+The architecture follows modern enterprise networking best practices.
 
-High availability strategies include:
+Key principles include:
 
-- Cloudflare global network
-- Redundant cloud infrastructure
-- Distributed cloud services
-- Automated backups
-- Monitoring and alerting
-- Disaster recovery planning
-
-As the platform evolves, additional redundancy and automation will be incorporated to further improve resilience.
-
----
-
-# Monitoring
-
-Monitoring is implemented across all environments to provide operational visibility.
-
-Monitoring responsibilities include:
-
-AWS
-
-- CloudWatch
-- Application metrics
-- Infrastructure metrics
-- Log collection
-
-Azure
-
-- Azure Monitor
-- Identity monitoring
-- Infrastructure monitoring
-
-On-Premises
-
-- System health monitoring
-- Network monitoring
-- Windows Server monitoring
-
-Continuous monitoring enables rapid identification and resolution of infrastructure issues.
-
----
-
-# Future Expansion
-
-The architecture is intentionally designed for future growth.
-
-Planned enhancements include:
-
-- Containerized applications
-- Kubernetes
-- CI/CD pipelines
+- Defense in depth
+- Least privilege access
+- Network segmentation
+- Private networking by default
+- High availability
+- Scalability
+- Secure hybrid connectivity
 - Infrastructure automation
-- Load balancing
-- Multi-region deployment
-- Zero Trust Architecture
-- Security Information and Event Management (SIEM)
-- Advanced observability
 
-The modular architecture allows new technologies to be integrated without requiring significant redesign.
+---
+
+# Supporting Documentation
+
+This document provides a high-level overview of the platform architecture.
+
+Additional implementation details are documented separately:
+
+| Document | Description |
+|----------|-------------|
+| 04-ip-addressing.md | Enterprise IP addressing plan |
+| 05-aws-network.md | AWS infrastructure design |
+| 06-azure-network.md | Azure infrastructure design |
+| 07-cloudflare.md | Cloudflare services and configuration |
+| 08-vpn-connectivity.md | Hybrid VPN design |
+| 09-routing.md | Routing architecture |
+| 10-security.md | Security architecture |
+| 11-monitoring.md | Monitoring and logging |
+| 12-disaster-recovery.md | Backup and disaster recovery |
+| 13-testing-validation.md | Testing and validation procedures |
 
 ---
 
 # Summary
 
-The Enterprise Hybrid Cloud Platform combines Cloudflare, AWS, Microsoft Azure, and an on-premises home lab into a secure and scalable hybrid cloud environment.
-
-Each environment performs a dedicated role within the architecture while maintaining secure communication through encrypted VPN connectivity.
-
-The design emphasizes enterprise networking principles, cloud engineering best practices, infrastructure automation, security, and maintainability.
-
-This architecture serves as the foundation for all future implementation, automation, testing, and documentation throughout the project.
+The Enterprise Hybrid Cloud Platform combines public cloud services, enterprise identity, secure networking, and on-premises infrastructure into a single hybrid environment. The architecture is designed to reflect real-world enterprise practices while providing a scalable platform for cloud engineering, networking, cybersecurity, automation, and modern application deployment.
