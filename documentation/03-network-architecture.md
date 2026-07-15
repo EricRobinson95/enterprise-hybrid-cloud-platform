@@ -108,7 +108,7 @@ Responsibilities include:
 - Hybrid connectivity
 - Future virtualization
 
-The environment will also integrate the ClockworkPi uConsole as a portable field engineering workstation.
+The environment will also integrate VMware Workstation Pro for virtualization and a ClockworkPi uConsole as a portable field engineering workstation.
 
 ---
 
@@ -123,6 +123,28 @@ Hybrid connectivity enables:
 - Identity integration
 - Backup and recovery
 - Infrastructure management
+
+---
+
+# Site-to-Site VPN Architecture
+
+The Enterprise Hybrid Cloud Platform uses a secure **WireGuard site-to-site VPN** to connect AWS, Azure, and the on-premises environment into a single hybrid network.
+
+A **hub-and-spoke** topology has been selected, with AWS serving as the central VPN hub. Azure and the on-premises environment each maintain an encrypted WireGuard tunnel to AWS. Traffic between Azure and the on-premises environment is securely routed through the AWS hub.
+
+This design simplifies routing, reduces operational complexity, lowers infrastructure costs, and provides a scalable foundation for future expansion.
+
+### Hybrid VPN Topology
+
+```
+                 AWS
+          WireGuard Hub
+           /          \
+          /            \
+     Azure          On-Premises
+```
+
+Additional VPN implementation details, routing design, and security considerations are documented in **07-vpn-architecture.md**.
 
 ---
 
@@ -154,16 +176,10 @@ Additional implementation details are documented separately:
 | 04-ip-addressing.md | Enterprise IP addressing plan |
 | 05-aws-network.md | AWS infrastructure design |
 | 06-azure-network.md | Azure infrastructure design |
-| 07-cloudflare.md | Cloudflare services and configuration |
-| 08-vpn-connectivity.md | Hybrid VPN design |
-| 09-routing.md | Routing architecture |
-| 10-security.md | Security architecture |
-| 11-monitoring.md | Monitoring and logging |
-| 12-disaster-recovery.md | Backup and disaster recovery |
-| 13-testing-validation.md | Testing and validation procedures |
+| 07-vpn-architecture.md | WireGuard VPN architecture |
 
 ---
 
 # Summary
 
-The Enterprise Hybrid Cloud Platform combines public cloud services, enterprise identity, secure networking, and on-premises infrastructure into a single hybrid environment. The architecture is designed to reflect real-world enterprise practices while providing a scalable platform for cloud engineering, networking, cybersecurity, automation, and modern application deployment.
+The Enterprise Hybrid Cloud Platform combines public cloud services, enterprise identity, secure networking, and on-premises infrastructure into a single hybrid environment. By integrating AWS, Azure, Cloudflare, and a WireGuard-based VPN architecture, the platform demonstrates modern enterprise design principles while providing a scalable foundation for cloud engineering, networking, cybersecurity, automation, and application deployment.

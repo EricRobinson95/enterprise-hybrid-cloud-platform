@@ -4,9 +4,9 @@
 
 ## Overview
 
-Microsoft Azure provides the enterprise infrastructure services for the Enterprise Hybrid Cloud Platform. Unlike AWS, which hosts the production application, Azure is responsible for identity management, Windows administration, file services, monitoring, and infrastructure management.
+Microsoft Azure provides the enterprise infrastructure services for the Enterprise Hybrid Cloud Platform. Unlike AWS, which hosts the production application, Azure is responsible for identity management, Windows administration, file services, monitoring, backup, and enterprise infrastructure.
 
-The Azure environment is designed around a dedicated Virtual Network (VNet) that isolates enterprise services into separate private subnets. This approach improves security, simplifies administration, and provides a scalable foundation for future growth.
+The Azure environment is deployed within a dedicated Virtual Network (VNet) that separates identity, management, and infrastructure services into individual private subnets. Azure also securely connects to AWS through a WireGuard site-to-site VPN.
 
 ---
 
@@ -16,18 +16,19 @@ The Azure environment has been designed to:
 
 - Provide centralized identity management
 - Host Windows Server infrastructure
-- Deliver Active Directory Domain Services
+- Deliver Active Directory Domain Services (AD DS)
 - Provide internal DNS services
 - Host enterprise file services
 - Support secure remote administration
 - Provide monitoring and backup capabilities
 - Integrate securely with AWS and the on-premises environment
+- Support Infrastructure as Code (Terraform)
 
 ---
 
 # Azure Virtual Network (VNet)
 
-All Azure resources are deployed within a dedicated Virtual Network.
+All Azure resources are deployed inside a dedicated Azure Virtual Network.
 
 ## VNet Configuration
 
@@ -36,15 +37,13 @@ All Azure resources are deployed within a dedicated Virtual Network.
 | Network | Azure Virtual Network |
 | CIDR Block | 10.1.0.0/16 |
 
-The /16 address space provides sufficient room for future expansion while maintaining clear separation from AWS and the on-premises network.
+Using a /16 network allows future subnet expansion while maintaining a structured enterprise addressing scheme.
 
 ---
 
 # Subnet Design
 
-The Azure VNet is divided into three private subnets based on their operational role.
-
----
+The Azure VNet is divided into three primary private subnets.
 
 ## Identity Services Subnet
 
@@ -53,7 +52,7 @@ The Azure VNet is divided into three private subnets based on their operational 
 Purpose:
 
 - Centralized authentication
-- Active Directory
+- Identity management
 - Internal DNS
 
 Resources:
@@ -62,7 +61,7 @@ Resources:
 - Active Directory Domain Services (AD DS)
 - DNS Server
 
-The Windows Server virtual machine functions as the enterprise Domain Controller, providing authentication, directory services, and internal name resolution.
+This subnet hosts the Domain Controller responsible for authenticating users and managing enterprise identity.
 
 ---
 
@@ -81,7 +80,7 @@ Resources:
 - Management Virtual Machine
 - Azure Bastion
 
-Azure Bastion enables secure RDP and SSH access without exposing management systems directly to the Internet.
+Azure Bastion provides secure browser-based RDP and SSH access without exposing management systems directly to the Internet.
 
 ---
 
@@ -91,9 +90,10 @@ Azure Bastion enables secure RDP and SSH access without exposing management syst
 
 Purpose:
 
-- Enterprise infrastructure services
+- Shared infrastructure services
 - Monitoring
 - Backup
+- File storage
 
 Resources:
 
@@ -101,13 +101,13 @@ Resources:
 - Azure Monitor
 - Azure Backup
 
-This subnet hosts supporting services that are used throughout the enterprise environment.
+These services support the overall enterprise infrastructure while remaining isolated from identity and management resources.
 
 ---
 
 # Windows Server
 
-Windows Server 2025 is the primary infrastructure server within Azure.
+Windows Server 2025 serves as the primary enterprise infrastructure server.
 
 Installed Roles:
 
@@ -124,35 +124,37 @@ Responsibilities include:
 - Shared folders
 - Internal DNS resolution
 
+Running Windows Server instead of fully managed directory services provides valuable hands-on experience with enterprise administration.
+
 ---
 
 # Active Directory Domain Services
 
-Active Directory Domain Services (AD DS) provides centralized identity management for the enterprise.
+Active Directory Domain Services (AD DS) provides centralized authentication and authorization.
 
 Capabilities include:
 
 - User authentication
 - Computer authentication
 - Group Policy management
-- Organizational Unit management
+- Organizational Unit administration
 - Security group management
 - Domain administration
 
-This environment mirrors many of the services commonly deployed within enterprise Windows networks.
+Azure acts as the identity provider for the hybrid cloud platform.
 
 ---
 
 # DNS Services
 
-The internal DNS server provides name resolution for Azure resources and future hybrid cloud services.
+The integrated DNS Server provides internal name resolution for Azure resources and hybrid cloud services.
 
 Responsibilities include:
 
 - Internal hostname resolution
 - Active Directory integration
 - Service discovery
-- Domain controller location
+- Domain Controller location
 
 DNS is integrated directly with Active Directory.
 
@@ -160,14 +162,14 @@ DNS is integrated directly with Active Directory.
 
 # Azure Bastion
 
-Azure Bastion provides secure administrative access to Azure virtual machines.
+Azure Bastion provides secure remote administration.
 
 Benefits include:
 
 - Secure RDP
 - Secure SSH
-- No public IP addresses required on management servers
-- Browser-based administration
+- Browser-based access
+- No public IP addresses required on management VMs
 - Reduced attack surface
 
 ---
@@ -180,21 +182,20 @@ Planned services include:
 
 - Department shared folders
 - User home directories
-- File permissions
-- NTFS security
+- NTFS permissions
 - SMB file sharing
 
 ---
 
 # Azure Monitor
 
-Azure Monitor provides operational visibility across the Azure environment.
+Azure Monitor provides operational visibility throughout the Azure environment.
 
 Monitoring includes:
 
 - Virtual machine health
 - Performance metrics
-- System logs
+- Event logs
 - Resource utilization
 - Alerting
 
@@ -202,7 +203,7 @@ Monitoring includes:
 
 # Azure Backup
 
-Azure Backup protects critical infrastructure.
+Azure Backup protects enterprise infrastructure.
 
 Capabilities include:
 
@@ -214,18 +215,63 @@ Capabilities include:
 
 ---
 
+# VPN Connectivity
+
+Azure securely connects to AWS through a dedicated WireGuard VPN tunnel.
+
+A dedicated Ubuntu Virtual Machine running WireGuard functions as the Azure VPN Gateway.
+
+Responsibilities include:
+
+- Encrypting VPN traffic
+- Decrypting VPN traffic
+- Routing Azure traffic toward AWS
+- Providing secure hybrid cloud connectivity
+
+Azure does not communicate directly with the on-premises environment. Instead, all inter-site communication is routed through AWS using the hub-and-spoke VPN topology.
+
+Detailed VPN implementation is documented in **07-vpn-architecture.md**.
+
+---
+
+# Hybrid Cloud Integration
+
+Azure integrates with:
+
+- AWS Virtual Private Cloud (10.0.0.0/16)
+- On-Premises Network (10.2.0.0/16)
+- WireGuard VPN
+- Cloudflare (indirectly through AWS)
+
+Azure provides enterprise services that support workloads hosted across the hybrid cloud platform.
+
+---
+
+# Routing
+
+Traffic routing occurs in multiple stages.
+
+1. Azure Route Tables determine packet forwarding.
+2. Linux routing on the Ubuntu VPN Gateway selects the correct interface.
+3. WireGuard encrypts traffic and forwards it to AWS.
+4. AWS forwards traffic to the appropriate destination when required.
+
+This layered routing approach separates cloud networking from enterprise services.
+
+---
+
 # Security Model
 
-The Azure environment follows a layered security approach.
+The Azure environment follows a defense-in-depth security strategy.
 
 Security is achieved through:
 
 - Private subnets
+- Network segmentation
 - Centralized authentication
+- Dedicated VPN gateway
 - Secure management access
-- Role-based administration
-- Network isolation
-- Least privilege access
+- Least privilege administration
 
 Future security enhancements include:
 
@@ -233,63 +279,50 @@ Future security enhancements include:
 - Azure Firewall
 - Microsoft Defender for Cloud
 - Azure Key Vault
-- Conditional Access policies
-
----
-
-# Hybrid Cloud Integration
-
-The Azure environment is designed to integrate with:
-
-- AWS Virtual Private Cloud (10.0.0.0/16)
-- On-Premises Network
-- WireGuard VPN
-- Cloudflare
-
-Hybrid connectivity will allow enterprise services such as Active Directory and DNS to support workloads hosted across multiple environments.
-
----
-
-# Design Decisions
-
-Several architectural decisions influenced the Azure network design.
-
-### Why a dedicated Azure VNet?
-
-Using a dedicated VNet provides complete network isolation while allowing secure hybrid connectivity with AWS and the on-premises environment.
-
-### Why Windows Server?
-
-Running Windows Server allows hands-on administration of Active Directory, DNS, Group Policy, and enterprise file services, providing valuable real-world experience.
-
-### Why separate subnets?
-
-Separating identity, management, and infrastructure services reduces the attack surface and simplifies administration.
-
-### Why Azure Bastion?
-
-Azure Bastion enables secure remote management without assigning public IP addresses to administrative virtual machines.
+- Conditional Access Policies
 
 ---
 
 # Future Improvements
 
-The Azure environment will continue to evolve throughout the project.
-
-Planned enhancements include:
+Future enhancements include:
 
 - Azure VPN Gateway
 - GatewaySubnet
 - Network Security Groups
 - Azure Firewall
 - Microsoft Defender for Cloud
-- Azure Key Vault
-- Terraform deployment
 - Azure Automation
 - Microsoft Entra ID integration
+- Terraform deployment
+- GitHub Actions CI/CD
+
+---
+
+# Design Decisions
+
+### Why a dedicated Azure VNet?
+
+A dedicated Virtual Network provides network isolation while supporting secure hybrid cloud connectivity.
+
+### Why Windows Server?
+
+Running Windows Server allows hands-on experience with Active Directory, DNS, Group Policy, file services, and enterprise administration.
+
+### Why separate subnets?
+
+Separating identity, management, and infrastructure services improves security, simplifies administration, and follows enterprise networking best practices.
+
+### Why Azure Bastion?
+
+Azure Bastion provides secure administrative access without exposing management virtual machines directly to the Internet.
+
+### Why a dedicated WireGuard VM?
+
+Azure does not provide a managed WireGuard service. A dedicated Ubuntu Virtual Machine running WireGuard provides secure VPN connectivity while keeping networking functions separate from enterprise services.
 
 ---
 
 # Summary
 
-The Azure environment serves as the enterprise management platform for the Enterprise Hybrid Cloud Platform. By combining Windows Server 2025, Active Directory Domain Services, DNS, Azure Bastion, Windows File Server, Azure Monitor, and Azure Backup within a segmented Virtual Network, the design provides a secure and scalable foundation for identity management, infrastructure administration, and hybrid cloud operations.
+Azure serves as the enterprise infrastructure platform for the Enterprise Hybrid Cloud Platform. By combining Windows Server 2025, Active Directory Domain Services, DNS, Azure Bastion, Windows File Server, Azure Monitor, Azure Backup, and a dedicated WireGuard VPN Gateway within a segmented Virtual Network, Azure provides secure identity management, enterprise administration, and hybrid cloud connectivity while supporting the AWS-hosted production application.

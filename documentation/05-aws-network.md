@@ -4,46 +4,45 @@
 
 ## Overview
 
-Amazon Web Services (AWS) provides the public cloud infrastructure for the Enterprise Hybrid Cloud Platform. The AWS environment is responsible for hosting the production web application while following enterprise networking, security, and cloud architecture best practices.
+Amazon Web Services (AWS) serves as the primary application hosting environment for the Enterprise Hybrid Cloud Platform. It provides the public-facing infrastructure responsible for delivering the web application while also acting as the central networking hub for secure hybrid cloud connectivity.
 
-The AWS environment has been designed using a layered network architecture that separates Internet-facing resources, application services, and database services into dedicated network segments.
+The AWS environment is designed using a segmented Virtual Private Cloud (VPC) with dedicated public and private subnets to separate Internet-facing resources, application workloads, and database services.
 
 ---
 
 # Design Objectives
 
-The AWS environment has been designed with the following objectives:
+The AWS environment has been designed to:
 
-- Host the public web application
-- Protect private resources from direct Internet access
-- Separate workloads into dedicated network tiers
-- Support containerized applications
-- Provide a scalable cloud platform
-- Minimize the attack surface
-- Integrate with Azure and the on-premises environment
-- Support future Infrastructure as Code deployments
+- Host the production web application
+- Provide secure Internet access through Cloudflare
+- Separate workloads using network segmentation
+- Support containerized application deployment
+- Protect backend services from direct Internet exposure
+- Securely connect AWS to Azure and the on-premises environment
+- Support Infrastructure as Code (Terraform)
+- Provide a scalable cloud foundation
 
 ---
 
-# Virtual Private Cloud (VPC)
+# AWS Virtual Private Cloud (VPC)
 
-All AWS resources are deployed inside a dedicated Amazon Virtual Private Cloud (VPC).
+All AWS resources are deployed inside a dedicated Amazon Virtual Private Cloud.
 
 ## VPC Configuration
 
 | Property | Value |
 |----------|-------|
+| Network | AWS VPC |
 | CIDR Block | 10.0.0.0/16 |
 
-The VPC acts as the private network boundary for the AWS environment.
-
-Using a /16 network allows the platform to create additional subnets in the future without requiring network redesign.
+Using a /16 network allows additional subnets to be created without redesigning the network.
 
 ---
 
 # Subnet Design
 
-The VPC is divided into three security zones.
+The VPC is divided into three primary subnets.
 
 ## Public Subnet
 
@@ -51,14 +50,16 @@ The VPC is divided into three security zones.
 
 Purpose:
 
-- Accept Internet traffic
-- Host Internet-facing infrastructure
+- Internet-facing infrastructure
+- Public entry point into AWS
 
 Resources:
 
+- Internet Gateway
 - Application Load Balancer
+- Ubuntu EC2 (WireGuard VPN Gateway)
 
-Only resources that must receive public traffic are placed in this subnet.
+Only resources requiring public connectivity are deployed within this subnet.
 
 ---
 
@@ -68,20 +69,17 @@ Only resources that must receive public traffic are placed in this subnet.
 
 Purpose:
 
-- Run containerized application services
+- Host application workloads
 - Prevent direct Internet access
-- Isolate application processing
+- Isolate business logic
 
 Resources:
 
 - Amazon ECS Cluster
-
-The application subnet hosts the business logic for the platform.
-
-Future ECS services include:
-
 - React Frontend
 - FastAPI Backend
+
+Application traffic reaches this subnet only through the Application Load Balancer.
 
 ---
 
@@ -91,107 +89,157 @@ Future ECS services include:
 
 Purpose:
 
-- Store application data
+- Securely store application data
 - Prevent public access
-- Isolate database services
 
 Resources:
 
 - Amazon RDS PostgreSQL
 
-The database subnet is accessible only by approved application services.
+Only approved application services are permitted to communicate with the database.
 
 ---
 
-# Internet Gateway
+# Internet Connectivity
 
-The Internet Gateway connects the VPC to the public Internet.
+Public client traffic enters AWS using the following path:
 
-Responsibilities include:
+```
+Internet
+      │
+Cloudflare
+      │
+Internet Gateway
+      │
+Application Load Balancer
+      │
+Amazon ECS
+      │
+Amazon RDS
+```
 
-- Allow inbound HTTPS traffic
-- Allow outbound Internet connectivity
-- Serve as the public entry point into the VPC
-
-The Internet Gateway does not perform routing decisions or load balancing.
+Only the Application Load Balancer is exposed to client traffic.
 
 ---
 
 # Application Load Balancer
 
-The Application Load Balancer (ALB) receives incoming application requests.
+The Application Load Balancer (ALB) distributes incoming HTTPS traffic to application services.
 
 Responsibilities include:
 
-- Accept HTTPS traffic
-- Perform Layer 7 routing
-- Forward requests to the appropriate application service
-- Support future horizontal scaling
-- Perform health checks
+- HTTPS termination
+- Layer 7 load balancing
+- Health checks
+- Request routing
+- Future horizontal scaling
 
-The ALB is the only application component exposed to public traffic.
+The ALB acts as the public entry point for application traffic.
 
 ---
 
 # Amazon ECS
 
-Amazon Elastic Container Service (ECS) provides the container platform for the application.
-
-Benefits include:
-
-- Container orchestration
-- Simplified deployments
-- Independent service updates
-- Horizontal scaling
-- Improved resource utilization
-
-The ECS cluster will host multiple application services.
+Amazon Elastic Container Service (ECS) hosts the application.
 
 Planned services include:
 
 - React Frontend
 - FastAPI Backend
 
-Future services can be deployed without modifying the underlying network architecture.
+Benefits include:
+
+- Container orchestration
+- Simplified deployments
+- Independent application scaling
+- High availability
+- Efficient resource utilization
+
+ECS is responsible only for running the application and does not participate in VPN routing.
 
 ---
 
-# Amazon RDS PostgreSQL
+# Amazon RDS
 
 Amazon RDS provides a managed PostgreSQL database.
 
-Advantages include:
+Benefits include:
 
 - Automated backups
 - High availability
 - Managed patching
 - Monitoring
-- Automated recovery
+- Recovery
 
-Keeping the database inside a dedicated private subnet reduces the overall attack surface.
+The database remains isolated inside a dedicated private subnet.
+
+---
+
+# VPN Gateway
+
+AWS serves as the VPN hub for the hybrid cloud platform.
+
+A dedicated Ubuntu EC2 instance running WireGuard functions as the AWS VPN Gateway.
+
+Responsibilities include:
+
+- Encrypting VPN traffic
+- Decrypting VPN traffic
+- Routing traffic between AWS, Azure, and the on-premises environment
+- Providing secure hybrid cloud connectivity
+
+The VPN gateway is deployed separately from the application infrastructure to isolate networking services from application workloads.
+
+---
+
+# Hybrid Cloud Connectivity
+
+AWS maintains encrypted WireGuard tunnels with:
+
+- Microsoft Azure
+- On-Premises Network
+
+Using a hub-and-spoke topology, AWS acts as the central routing point for hybrid cloud communication.
+
+Traffic between Azure and the on-premises environment traverses AWS through the VPN hub.
+
+Detailed VPN implementation is documented in **07-vpn-architecture.md**.
+
+---
+
+# Routing
+
+Traffic routing within AWS occurs in multiple stages.
+
+1. AWS Route Tables determine where packets should be forwarded.
+2. The WireGuard VPN Gateway processes hybrid cloud traffic.
+3. Linux routing forwards traffic through the appropriate interface.
+4. WireGuard encrypts packets and forwards them to the correct VPN peer.
+
+This layered routing model separates cloud networking from application processing.
 
 ---
 
 # Security Model
 
-The AWS environment follows a defense-in-depth strategy.
+The AWS environment follows a defense-in-depth security model.
 
 Security is achieved through:
 
-- Network segmentation
-- Private subnets
+- Public and private subnet separation
 - Least privilege access
-- Layered application architecture
-- Container isolation
+- Dedicated VPN gateway
+- Application isolation
 - Database isolation
+- Secure hybrid connectivity
 
-Future security services include:
+Future security enhancements include:
 
 - Security Groups
 - Network ACLs
+- AWS WAF
 - AWS Secrets Manager
 - IAM Roles
-- AWS WAF
 
 ---
 
@@ -202,7 +250,8 @@ Operational visibility will be provided through Amazon CloudWatch.
 Monitoring will include:
 
 - ECS performance
-- Container health
+- EC2 performance
+- VPN health
 - Application logs
 - Database performance
 - Load Balancer metrics
@@ -210,64 +259,45 @@ Monitoring will include:
 
 ---
 
-# High Availability
+# Future Improvements
 
-The network has been designed for future expansion.
-
-Planned improvements include:
+Future enhancements include:
 
 - Multi-Availability Zone deployment
 - Auto Scaling
 - NAT Gateway
-- Route Tables
-- Additional private subnets
-- ECS service scaling
-
-These enhancements can be added without redesigning the existing network.
+- Additional Route Tables
+- CloudWatch dashboards
+- GitHub Actions CI/CD
+- Terraform deployment
+- AWS Systems Manager
 
 ---
 
 # Design Decisions
 
-Several architectural decisions were made during the design of the AWS environment.
-
 ### Why a /16 VPC?
 
-A /16 network provides flexibility for future growth while allowing multiple /24 subnets to be created as additional services are deployed.
+Provides sufficient address space for future growth while simplifying subnet allocation.
 
 ### Why separate subnets?
 
-Separating public, application, and database resources limits unnecessary communication and improves security.
+Separating Internet-facing resources, application services, and databases improves security and simplifies administration.
 
 ### Why ECS?
 
-Containerization provides a modern deployment platform that supports independent application services and future scalability.
+ECS provides a scalable platform for containerized applications while separating infrastructure from application logic.
 
-### Why Amazon RDS?
+### Why a dedicated WireGuard EC2?
 
-Using a managed database service reduces operational overhead while improving reliability and backup capabilities.
+WireGuard is deployed on a dedicated Ubuntu EC2 instance because AWS does not provide a managed WireGuard service. Separating the VPN gateway from ECS ensures networking functions remain independent from application workloads.
 
----
+### Why AWS as the VPN hub?
 
-# Future Improvements
-
-The AWS environment will continue to evolve throughout the project.
-
-Planned additions include:
-
-- NAT Gateway
-- Route Tables
-- Security Groups
-- Multi-AZ deployment
-- ECS Services
-- ECS Tasks
-- GitHub Actions CI/CD
-- Terraform deployment
-- CloudWatch dashboards
-- AWS Systems Manager
+AWS hosts the production application and already serves as the primary entry point for Internet traffic. Using AWS as the VPN hub simplifies routing, reduces VPN complexity, and provides a scalable foundation for future expansion.
 
 ---
 
 # Summary
 
-The AWS environment provides a secure, scalable, and production-oriented foundation for hosting the Enterprise Hybrid Cloud Platform. By combining a segmented VPC, Amazon ECS, Amazon RDS, and an Application Load Balancer, the design follows modern cloud architecture principles while remaining flexible enough to support future growth and additional enterprise services.
+AWS serves as both the production application platform and the central networking hub for the Enterprise Hybrid Cloud Platform. By combining a segmented VPC, Amazon ECS, Amazon RDS, an Application Load Balancer, and a dedicated WireGuard VPN Gateway, the AWS environment provides a secure, scalable, and enterprise-ready foundation for hybrid cloud application hosting.
