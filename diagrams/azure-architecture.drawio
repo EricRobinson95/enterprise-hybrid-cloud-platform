@@ -1,6 +1,6 @@
 <mxfile host="Electron">
   <diagram name="Page-1" id="RP4ZPmqMCuTyzu-pA2Td">
-    <mxGraphModel dx="1755" dy="870" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1478" dy="733" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -29,7 +29,7 @@
           <mxGeometry height="30" width="165" x="200" y="480" as="geometry" />
         </mxCell>
         <mxCell id="rDlIikh5jjJFutqVJWoI-16" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;" value="Private Infrastructure Service Subnet&lt;div&gt;10.1.4.0/24&lt;/div&gt;" vertex="1">
-          <mxGeometry height="30" width="215" x="205" y="640" as="geometry" />
+          <mxGeometry height="30" width="215" x="200" y="642" as="geometry" />
         </mxCell>
         <mxCell id="rDlIikh5jjJFutqVJWoI-34" edge="1" parent="1" source="rDlIikh5jjJFutqVJWoI-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;" target="rDlIikh5jjJFutqVJWoI-33" value="">
           <mxGeometry relative="1" as="geometry" />
@@ -67,8 +67,8 @@
         <mxCell id="2-BQfcV8EPxYpGFBvRmM-3" parent="1" style="whiteSpace=wrap;html=1;fillColor=none;" value="" vertex="1">
           <mxGeometry height="80" width="167" x="350" y="172" as="geometry" />
         </mxCell>
-        <mxCell id="2-BQfcV8EPxYpGFBvRmM-4" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;" value="WireGuard VPN Gateway&lt;div&gt;Ubuntu VM&lt;br&gt;&lt;div&gt;172.16.100.2/24&lt;/div&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="30" width="162" x="350" y="178" as="geometry" />
+        <mxCell id="2-BQfcV8EPxYpGFBvRmM-4" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;" value="Ubuntu VM&lt;div&gt;WireGuard VPN Gateway&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;eth0: 10.1.1.10&lt;br&gt;&lt;div&gt;&lt;div&gt;wg0: 172.16.100.2&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="30" width="162" x="351" y="194" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
