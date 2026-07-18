@@ -1,106 +1,246 @@
-# Project Overview
+# Enterprise Hybrid Cloud Platform
 
-## Introduction
+## Project Overview
 
-The Enterprise Hybrid Cloud Platform is a production-style infrastructure project designed to host my professional portfolio while demonstrating enterprise networking, cloud engineering, infrastructure automation, and security best practices.
+This project demonstrates the design, deployment, and documentation of a secure enterprise hybrid cloud environment connecting Amazon Web Services (AWS) and Microsoft Azure using a WireGuard site-to-site VPN.
 
-The platform integrates an on-premises home lab with Amazon Web Services (AWS), Microsoft Azure, and Cloudflare to create a secure, scalable, and highly available hybrid cloud environment. Rather than serving as a simple demonstration or lab, this infrastructure is designed to function as a real-world enterprise environment that continuously evolves as new technologies and services are implemented.
+The environment simulates a real-world enterprise network where resources hosted in separate cloud providers communicate securely over encrypted tunnels while maintaining network segmentation and private IP connectivity.
 
-The hosted platform will provide access to my professional resume, technical documentation, networking projects, cloud projects, automation scripts, GitHub repositories, and future software development work. Every component of the infrastructure is designed, documented, deployed, and maintained using enterprise design principles and industry best practices.
-
----
-
-# Project Purpose
-
-The purpose of this project is to design, deploy, and maintain a modern hybrid cloud infrastructure that demonstrates the skills expected of a Network Engineer, Cloud Engineer, or Infrastructure Engineer.
-
-The platform will serve as both a production hosting environment and a continuously expanding engineering project where new technologies, automation, and cloud services can be integrated over time.
+The project emphasizes cloud networking, Linux administration, VPN technologies, infrastructure documentation, and network verification while following enterprise networking and security best practices.
 
 ---
 
-# Project Objectives
+# Project Goals
 
-The primary objectives of this project are to:
-
-- Design a scalable enterprise hybrid cloud architecture.
-- Integrate an on-premises network with Amazon Web Services (AWS) and Microsoft Azure.
-- Secure public-facing services using Cloudflare.
-- Host a professional portfolio and technical documentation.
-- Implement Infrastructure as Code (IaC) using Terraform.
-- Establish secure communication between cloud and on-premises environments.
-- Apply enterprise networking and security best practices.
-- Monitor infrastructure health, performance, and availability.
-- Document every stage of the planning, deployment, and validation process.
-- Build a platform that can continue to grow as additional technologies are introduced.
+- Build a secure hybrid cloud network between AWS and Azure.
+- Deploy Linux virtual machines in separate cloud environments.
+- Configure a WireGuard site-to-site VPN.
+- Enable encrypted communication between AWS and Azure.
+- Verify private network connectivity across both cloud providers.
+- Document all configuration, testing, and verification procedures.
+- Create a portfolio-quality enterprise networking project.
 
 ---
 
-# Project Scope
-
-This project includes the planning, deployment, documentation, and management of the following environments.
-
-## On-Premises Infrastructure
-
-- Home Lab
-- Enterprise Network
-- Active Directory
-- DNS
-- DHCP
-- File Services
-- VPN Connectivity
-- Monitoring Services
-- Network Management
+# Technologies Used
 
 ## Amazon Web Services (AWS)
 
-- Virtual Private Cloud (VPC)
-- Public and Private Subnets
-- Web Server
-- Application Server
-- Database Services
+- Amazon EC2
+- Amazon VPC
 - Security Groups
-- Route Tables
-- Internet Gateway
-- CloudWatch Monitoring
+- Elastic IP
+- Ubuntu Server 24.04 LTS
 
 ## Microsoft Azure
 
-- Virtual Network (VNet)
-- Identity Services
-- Active Directory Integration
-- Virtual Machines
+- Azure Virtual Machine
+- Azure Virtual Network (VNet)
+- Network Security Group (NSG)
+- Static Public IP
+- Ubuntu Server 24.04 LTS
+
+## Networking
+
+- WireGuard VPN
+- IPv4 Routing
+- Private Addressing
+- Linux Networking
+- Secure Shell (SSH)
+
+## Operating System
+
+- Ubuntu Server 24.04 LTS
+
+## Tools
+
+- Visual Studio Code
+- Git
+- GitHub
+- Draw.io
+- Windows Terminal
+
+---
+
+# Network Architecture
+
+The environment consists of two cloud environments connected through a secure WireGuard VPN tunnel.
+
+AWS hosts:
+
+- Ubuntu WireGuard Gateway
+- AWS VPC
+- Private subnet
+
+Azure hosts:
+
+- Ubuntu WireGuard Gateway
+- Azure Virtual Network
+- Private subnet
+
+Both gateways communicate through encrypted WireGuard tunnels using static public IP addresses while routing private network traffic through the VPN.
+
+---
+
+# VPN Configuration
+
+Tunnel Network
+
+```
+172.168.100.0/24
+```
+
+AWS WireGuard Address
+
+```
+172.168.100.1
+```
+
+Azure WireGuard Address
+
+```
+172.168.100.2
+```
+
+AWS Private Network
+
+```
+10.0.0.0/16
+```
+
+Azure Private Network
+
+```
+10.1.0.0/16
+```
+
+---
+
+# Features
+
+- Secure WireGuard site-to-site VPN
+- Encrypted inter-cloud communication
+- Static public endpoints
+- Private network routing
+- Persistent VPN tunnel
+- Linux IP forwarding
+- Cloud-native firewall configuration
+- Infrastructure documentation
+- Configuration version control
+- Network verification and testing
+
+---
+
+# Verification
+
+The VPN implementation was validated by verifying:
+
+- Successful WireGuard tunnel establishment
+- Active VPN handshake
+- Bidirectional WireGuard tunnel communication
+- AWS to Azure private network connectivity
+- Azure to AWS private network connectivity
+- End-to-end ICMP testing
+- Secure routing across the encrypted tunnel
+
+Verification screenshots are available in:
+
+```
+images/testing/verification/
+```
+
+---
+
+# Skills Demonstrated
+
+## Cloud Computing
+
+- AWS
+- Microsoft Azure
+
+## Networking
+
+- VPN Technologies
+- WireGuard
+- Routing
+- IP Addressing
+- Network Segmentation
+- Private Networking
+
+## Linux Administration
+
+- Ubuntu Server
+- SSH
+- System Configuration
+- Network Configuration
+- Service Management
+
+## Security
+
+- Encrypted VPN Tunnels
+- Public Key Cryptography
+- Firewall Configuration
+- Security Groups
 - Network Security Groups
-- Route Tables
-- Azure Monitor
 
-## Cloudflare
+## DevOps
 
-- Public DNS
-- SSL/TLS
-- Web Application Firewall (WAF)
-- DDoS Protection
-- CDN
-- Performance Optimization
+- Git
+- GitHub
+- Infrastructure Documentation
+- Configuration Management
 
 ---
 
-# Expected Outcomes
+# Future Enhancements
 
-Upon completion, this project will demonstrate the ability to:
-
-- Design enterprise hybrid cloud infrastructures.
-- Deploy secure networking solutions across multiple cloud providers.
-- Implement Infrastructure as Code using Terraform.
-- Configure secure hybrid cloud connectivity.
-- Apply enterprise security principles.
-- Build and maintain production-style cloud environments.
-- Produce professional technical documentation.
-- Host and manage a continuously evolving professional engineering platform.
+- Azure Active Directory integration
+- Windows Server Active Directory
+- DNS integration across both clouds
+- File Services
+- Certificate Services
+- Cloudflare Zero Trust
+- High Availability VPN
+- Dynamic Routing (BGP)
+- Monitoring and Logging
+- Infrastructure as Code using Terraform
 
 ---
 
-# Long-Term Vision
+# Repository Structure
 
-The Enterprise Hybrid Cloud Platform is intended to evolve throughout my career as new technologies, certifications, and engineering projects are completed.
+```
+enterprise-hybrid-cloud-platform/
+│
+├── configs/
+├── diagrams/
+├── documentation/
+├── images/
+├── scripts/
+├── LICENSE
+└── README.md
+```
 
-Future enhancements may include containerization, Kubernetes, CI/CD pipelines, automation with Ansible, advanced monitoring solutions, Zero Trust security, and additional cloud services. Rather than remaining a static project, this platform will serve as the foundation for continuous learning and professional development.
+---
+
+# Project Status
+
+**Current Phase:** WireGuard Site-to-Site VPN Completed
+
+## Completed
+
+- AWS networking
+- Azure networking
+- Ubuntu virtual machines
+- SSH access
+- WireGuard installation
+- WireGuard key generation
+- VPN tunnel configuration
+- Secure site-to-site connectivity
+- Private network routing
+- End-to-end connectivity verification
+- Project documentation
+
+## Next Phase
+
+Deploy enterprise services across the hybrid cloud environment, including Active Directory, DNS, file services, and additional infrastructure components over the established VPN.

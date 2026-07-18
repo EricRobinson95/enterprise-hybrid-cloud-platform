@@ -1,89 +1,21 @@
 # 07 - VPN Architecture
 
-# Enterprise Hybrid Cloud Platform - VPN Architecture
+# Overview
 
-## Overview
+This document describes the architecture, design decisions, and network topology of the WireGuard site-to-site VPN connecting Amazon Web Services (AWS) and Microsoft Azure within the Enterprise Hybrid Cloud Platform.
 
-The Enterprise Hybrid Cloud Platform uses a secure site-to-site Virtual Private Network (VPN) to connect Amazon Web Services (AWS), Microsoft Azure, and the on-premises environment into a single hybrid enterprise network.
-
-Rather than exposing internal services to the public Internet, all inter-site communication is encrypted using WireGuard VPN tunnels. This allows cloud resources and on-premises infrastructure to communicate securely over public Internet connections.
+The VPN establishes a secure, encrypted connection between two independent cloud environments, allowing private resources in each network to communicate over the Internet while maintaining network isolation and strong cryptographic authentication.
 
 ---
 
-# Design Objectives
+# Objectives
 
-The VPN architecture has been designed to:
-
-- Secure communication between cloud environments
-- Connect AWS, Azure, and the on-premises lab
-- Protect management traffic from public exposure
-- Support centralized identity services
-- Allow private administration of cloud resources
-- Provide a scalable hybrid cloud foundation
-- Minimize infrastructure cost while maintaining enterprise design principles
-
----
-
-# VPN Topology
-
-The platform uses a **hub-and-spoke** VPN topology.
-
-```
-                 AWS
-          WireGuard Hub
-           /          \
-          /            \
-     Azure          On-Premises
-```
-
-AWS functions as the central VPN hub.
-
-Azure and the on-premises environment each maintain a secure WireGuard tunnel to AWS. Traffic between Azure and the on-premises environment is routed through AWS.
-
-This design simplifies routing, reduces the number of VPN tunnels required, and provides a single location for VPN management.
-
----
-
-# Why Hub-and-Spoke?
-
-Several VPN topologies were evaluated during the design phase.
-
-## Hub-and-Spoke (Selected)
-
-Advantages:
-
-- Simpler routing
-- Lower operational complexity
-- Fewer VPN tunnels
-- Easier troubleshooting
-- Lower cloud infrastructure cost
-- Easier future expansion
-
-Disadvantages:
-
-- AWS becomes the central routing point
-- Traffic between Azure and the on-premises environment traverses AWS
-
----
-
-## Full Mesh (Not Selected)
-
-A full mesh topology would provide direct communication between every site.
-
-Advantages:
-
-- Direct communication between all locations
-- Lower latency between individual sites
-- No central routing hub
-
-Disadvantages:
-
-- Increased configuration complexity
-- More VPN tunnels
-- More difficult troubleshooting
-- Poor scalability as additional sites are added
-
-For this project, the hub-and-spoke design provides the best balance between enterprise architecture, simplicity, and cost.
+- Connect AWS and Azure using a secure site-to-site VPN.
+- Encrypt all inter-cloud traffic.
+- Route private network traffic through the VPN.
+- Maintain separate private address spaces.
+- Simulate an enterprise hybrid cloud environment.
+- Provide a scalable foundation for future infrastructure services.
 
 ---
 
@@ -94,174 +26,295 @@ WireGuard was selected because it provides:
 - Modern cryptography
 - High performance
 - Lightweight implementation
-- Fast tunnel establishment
 - Simple configuration
-- Cross-platform support
+- Small codebase
+- Cross-platform compatibility
+- Low latency
 
-Compared to traditional VPN technologies such as OpenVPN, WireGuard requires less configuration while providing excellent performance.
-
----
-
-# VPN Gateways
-
-Each environment contains a dedicated WireGuard gateway.
-
-## AWS VPN Gateway
-
-Platform:
-
-- Ubuntu EC2 Instance
-
-Responsibilities:
-
-- VPN hub
-- Route cloud traffic
-- Encrypt and decrypt VPN traffic
-- Forward traffic between AWS, Azure, and the on-premises environment
+Compared to traditional VPN technologies, WireGuard requires fewer configuration files while providing strong encryption and excellent performance.
 
 ---
 
-## Azure VPN Gateway
+# Hybrid Cloud Architecture
 
-Platform:
-
-- Ubuntu Virtual Machine
-
-Responsibilities:
-
-- Connect Azure to AWS
-- Encrypt and decrypt VPN traffic
-- Forward traffic into the Azure Virtual Network
-
----
-
-## On-Premises VPN Gateway
-
-Platform:
-
-- Ubuntu Server Virtual Machine (VMware Workstation Pro)
-
-Responsibilities:
-
-- Connect the home lab to AWS
-- Provide secure administrative access
-- Route local network traffic through the VPN
-
-The virtual gateway can later be replaced with dedicated network hardware such as a Cisco router or firewall without requiring changes to the cloud environments.
+```
+                              Internet
+                                  │
+                    ─────────────────────────────
+                                  │
+                 AWS Elastic IP         Azure Static Public IP
+                        │                     │
+          ┌────────────────────┐   ┌────────────────────┐
+          │ AWS WireGuard VM   │===│ Azure WireGuard VM │
+          │ Ubuntu 24.04 LTS   │   │ Ubuntu 24.04 LTS   │
+          │                    │   │                    │
+          │ WG:172.168.100.1   │   │ WG:172.168.100.2   │
+          └────────────────────┘   └────────────────────┘
+                    │                         │
+             AWS VPC                     Azure VNet
+             10.0.0.0/16                10.1.0.0/16
+                    │                         │
+             Private Resources         Private Resources
+```
 
 ---
 
-# Advertised Networks
+# Network Addressing
 
-Each VPN gateway advertises the private network it owns.
+## AWS
 
-| Environment | Network |
-|-------------|---------|
-| AWS | 10.0.0.0/16 |
-| Azure | 10.1.0.0/16 |
-| On-Premises | 10.2.0.0/16 |
+| Network | Address |
+|----------|---------|
+| VPC | 10.0.0.0/16 |
+| Public Subnet | 10.0.1.0/24 |
+| WireGuard Tunnel | 172.168.100.1/24 |
 
-These advertised networks allow each environment to determine where traffic should be forwarded across the VPN.
+---
+
+## Azure
+
+| Network | Address |
+|----------|---------|
+| VNet | 10.1.0.0/16 |
+| Public Subnet | 10.1.1.0/24 |
+| WireGuard Tunnel | 172.168.100.2/24 |
+
+---
+
+## Tunnel Network
+
+| Network | Address |
+|----------|---------|
+| WireGuard VPN | 172.168.100.0/24 |
 
 ---
 
 # Traffic Flow
 
-## Client Traffic
+When an AWS resource communicates with an Azure resource:
 
-Public client requests follow this path:
+1. Traffic destined for the Azure VNet (10.1.0.0/16) is routed to the WireGuard interface (`wg0`).
+2. WireGuard encrypts the packet.
+3. The encrypted packet traverses the public Internet.
+4. The Azure WireGuard gateway decrypts the packet.
+5. The packet is forwarded to the Azure Virtual Network.
 
-```
-Client
-    │
-Cloudflare
-    │
-Application Load Balancer
-    │
-Amazon ECS
-    │
-Amazon RDS
-```
-
-Client traffic does **not** traverse the VPN.
+The reverse process occurs for traffic originating from Azure.
 
 ---
 
-## Hybrid Infrastructure Traffic
+# Routing Design
 
-Administrative and infrastructure traffic follows this path:
+AWS advertises:
 
 ```
+10.1.0.0/16
+```
+
+Azure advertises:
+
+```
+10.0.0.0/16
+```
+
+Each gateway routes only the remote private network through the VPN.
+
+Internet-bound traffic remains local to its respective cloud environment.
+
+---
+
+# WireGuard Tunnel
+
+## AWS
+
+| Setting | Value |
+|----------|-------|
+| Interface | wg0 |
+| Tunnel Address | 172.168.100.1/24 |
+| Listen Port | 51820 |
+
+---
+
+## Azure
+
+| Setting | Value |
+|----------|-------|
+| Interface | wg0 |
+| Tunnel Address | 172.168.100.2/24 |
+| Listen Port | 51820 |
+
+---
+
+# Allowed IPs
+
 AWS
-     │
-WireGuard Tunnel
-     │
+
+```
+AllowedIPs = 10.1.0.0/16,172.168.100.2/32
+```
+
 Azure
-```
-
-or
 
 ```
-On-Premises
-      │
-WireGuard Tunnel
-      │
+AllowedIPs = 10.0.0.0/16,172.168.100.1/32
+```
+
+The `AllowedIPs` parameter performs two functions:
+
+- Defines which traffic should traverse the VPN tunnel.
+- Identifies which remote networks are reachable through each peer.
+
+---
+
+# Security Architecture
+
+The VPN uses multiple layers of security.
+
+## Cloud Security
+
 AWS
-      │
-WireGuard Tunnel
-      │
+
+- Security Groups
+- Elastic IP
+- SSH key authentication
+
 Azure
+
+- Network Security Groups
+- Static Public IP
+- SSH key authentication
+
+---
+
+## WireGuard Security
+
+- Public/Private Key Cryptography
+- ChaCha20 Encryption
+- Curve25519 Key Exchange
+- Authenticated Peers
+- UDP Port 51820
+
+Private keys remain only on their respective VPN gateways and are never stored in the GitHub repository.
+
+---
+
+# Routing vs NAT
+
+This implementation uses routed networking instead of Network Address Translation (NAT).
+
+Reasons include:
+
+- Non-overlapping private address spaces
+- Preservation of original source IP addresses
+- Simpler troubleshooting
+- Better logging and auditing
+- Enterprise site-to-site VPN best practices
+
+No address translation is required because:
+
+AWS
+
+```
+10.0.0.0/16
 ```
 
-Only private infrastructure traffic uses the VPN.
+Azure
+
+```
+10.1.0.0/16
+```
+
+These networks do not overlap.
 
 ---
 
-# Routing
+# High-Level Communication
 
-Routing decisions occur at multiple layers.
-
-1. AWS Route Tables determine whether traffic should be forwarded to the WireGuard gateway.
-2. Linux routing tables determine which interface forwards the packet.
-3. WireGuard selects the appropriate VPN peer based on the configured AllowedIPs.
-4. Azure and the on-premises environment perform similar routing decisions within their own networks.
-
-This layered routing model ensures that private traffic remains encrypted while moving between environments.
+```
+AWS EC2
+10.0.1.40
+      │
+      ▼
+WireGuard Gateway
+172.168.100.1
+      │
+Encrypted Tunnel
+      │
+172.168.100.2
+WireGuard Gateway
+      ▼
+Azure VM
+10.1.1.4
+```
 
 ---
 
-# Security Considerations
+# Verification
 
-The VPN architecture follows several security principles.
+The VPN architecture was validated through successful testing.
 
-- Encryption of all inter-site traffic
-- Least privilege routing
-- Private addressing
-- No direct exposure of internal services
-- Dedicated VPN gateways
-- Segmented cloud environments
+Verified:
 
-Only management and infrastructure traffic traverses the VPN.
+- WireGuard interface established
+- Peer authentication
+- Successful VPN handshake
+- Encrypted packet transfer
+- AWS WireGuard → Azure WireGuard
+- Azure WireGuard → AWS WireGuard
+- AWS private network → Azure private network
+- Azure private network → AWS private network
 
-Public application traffic remains isolated from the management network.
+Verification screenshots are available in:
+
+```
+images/testing/verification/
+```
+
+---
+
+# Design Decisions
+
+The following architectural decisions were made during implementation.
+
+- Ubuntu Server used as the VPN gateway in both cloud providers.
+- Static public IPs used for consistent VPN endpoints.
+- Separate private address spaces assigned to AWS and Azure.
+- Dedicated WireGuard tunnel network.
+- Routed VPN architecture without NAT.
+- Public/private key authentication.
+- Cloud-native firewall controls.
+
+---
+
+# Benefits
+
+This architecture provides:
+
+- Secure encrypted communication
+- Cloud-to-cloud connectivity
+- Low-latency VPN communication
+- Private resource access
+- Simple management
+- High performance
+- Enterprise-ready hybrid cloud foundation
 
 ---
 
 # Future Enhancements
 
-Future improvements include:
-
-- High Availability VPN gateways
-- Automatic failover
-- Dynamic routing
-- Additional branch office connectivity
-- Dedicated Cisco edge router
-- Physical Layer 3 switching
+- High Availability WireGuard gateways
+- Dynamic routing using BGP
+- Multi-region VPN connectivity
+- Cloudflare Zero Trust integration
+- Active Directory integration
+- Private DNS between cloud providers
 - Infrastructure as Code (Terraform)
-- Automated VPN deployment
+- VPN monitoring and alerting
 
 ---
 
-# Summary
+# Outcome
 
-The VPN architecture provides secure hybrid connectivity between AWS, Azure, and the on-premises environment using WireGuard. A hub-and-spoke topology was selected to simplify routing, reduce operational complexity, and provide a scalable foundation for future expansion. By separating public application traffic from private infrastructure traffic, the design follows modern enterprise networking best practices while supporting secure administration across all environments.
+A secure WireGuard site-to-site VPN architecture was successfully designed and implemented between AWS and Azure.
+
+The completed solution enables encrypted communication between both cloud providers while preserving independent private networks through routed connectivity. This architecture establishes the networking foundation for deploying additional enterprise services across the hybrid cloud environment.

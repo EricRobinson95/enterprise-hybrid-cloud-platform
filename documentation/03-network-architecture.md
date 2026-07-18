@@ -1,185 +1,298 @@
 # 03 - Network Architecture
 
-# Enterprise Hybrid Cloud Platform - Network Architecture
+# Overview
 
-## Overview
+This document describes the logical network architecture of the Enterprise Hybrid Cloud Platform. The environment connects Amazon Web Services (AWS) and Microsoft Azure using a secure WireGuard site-to-site VPN, creating a routed hybrid cloud infrastructure.
 
-The Enterprise Hybrid Cloud Platform is a modern hybrid cloud environment designed to demonstrate enterprise networking, cloud infrastructure, cybersecurity, automation, and application deployment.
-
-The platform integrates Amazon Web Services (AWS), Microsoft Azure, Cloudflare, and an on-premises network into a secure, scalable, and highly available architecture.
-
-Each environment has a dedicated responsibility while securely communicating through encrypted VPN connections.
+The architecture provides encrypted communication between cloud providers while maintaining independent private networks and secure administrative access.
 
 ---
 
-# Architecture Goals
+# Architecture Objectives
 
-The network architecture has been designed to:
-
-- Build a production-style hybrid cloud environment
-- Secure public-facing services
-- Separate workloads using network segmentation
-- Support cloud scalability
-- Enable centralized identity management
-- Provide secure remote administration
-- Integrate cloud and on-premises infrastructure
-- Support Infrastructure as Code (Terraform)
-- Enable automated deployments through GitHub Actions
+- Design a secure hybrid cloud network.
+- Connect AWS and Azure using a WireGuard site-to-site VPN.
+- Maintain separate private networks.
+- Encrypt all inter-cloud traffic.
+- Provide a scalable foundation for enterprise services.
+- Follow cloud networking and security best practices.
 
 ---
 
 # High-Level Architecture
 
 ```
-                     Internet
-                          │
-                     Cloudflare
-                          │
-          ┌───────────────┴───────────────┐
-          │                               │
-      AWS Cloud                    Azure Cloud
-          │                               │
-          └──────────── VPN ──────────────┘
-                          │
-                 On-Premises Network
+                               Internet
+                                   │
+          ┌────────────────────────┴────────────────────────┐
+          │                                                 │
+   AWS Elastic IP                                   Azure Static Public IP
+          │                                                 │
+┌─────────────────────┐                         ┌─────────────────────┐
+│ AWS WireGuard VM    │=========================│ Azure WireGuard VM  │
+│ Ubuntu 24.04 LTS    │   WireGuard VPN Tunnel  │ Ubuntu 24.04 LTS    │
+│ WG:172.168.100.1    │=========================│ WG:172.168.100.2    │
+└─────────────────────┘                         └─────────────────────┘
+          │                                                 │
+          │                                                 │
+   AWS VPC 10.0.0.0/16                           Azure VNet 10.1.0.0/16
+          │                                                 │
+   Private Resources                               Private Resources
 ```
 
 ---
 
-# Platform Components
+# Cloud Components
 
-## Cloudflare
+## Amazon Web Services
 
-Cloudflare serves as the public entry point into the platform.
+The AWS environment includes:
 
-Responsibilities include:
-
-- DNS
-- SSL/TLS
-- Web Application Firewall (WAF)
-- DDoS protection
-- Reverse proxy
-- Content Delivery Network (CDN)
-
----
-
-## Amazon Web Services (AWS)
-
-AWS hosts the public-facing application platform.
-
-Primary responsibilities include:
-
-- Containerized application hosting
-- Application networking
-- Database services
-- Monitoring
-- Logging
-
-Detailed AWS design is documented in **05-aws-network.md**.
+- Virtual Private Cloud (VPC)
+- Public Subnet
+- Internet Gateway
+- Route Table
+- Security Group
+- Elastic IP
+- Ubuntu Server 24.04 LTS EC2 Instance
+- WireGuard VPN Gateway
 
 ---
 
 ## Microsoft Azure
 
-Azure provides enterprise infrastructure services.
+The Azure environment includes:
 
-Primary responsibilities include:
-
-- Microsoft Entra ID
-- Active Directory
-- DNS
-- Windows Server
-- File services
-- Identity management
-
-Detailed Azure design is documented in **06-azure-network.md**.
+- Virtual Network (VNet)
+- Public Subnet
+- Network Security Group
+- Static Public IP
+- Network Interface
+- Ubuntu Server 24.04 LTS Virtual Machine
+- WireGuard VPN Gateway
 
 ---
 
-## On-Premises Network
+# Network Addressing
 
-The on-premises environment extends the cloud platform into a physical engineering lab.
+## AWS
 
-Responsibilities include:
-
-- Infrastructure testing
-- Network administration
-- Local services
-- Hybrid connectivity
-- Future virtualization
-
-The environment will also integrate VMware Workstation Pro for virtualization and a ClockworkPi uConsole as a portable field engineering workstation.
+| Resource | Address |
+|----------|---------|
+| VPC | 10.0.0.0/16 |
+| Public Subnet | 10.0.1.0/24 |
+| WireGuard Tunnel | 172.168.100.1/24 |
 
 ---
 
-# Hybrid Connectivity
+## Azure
 
-AWS, Azure, and the on-premises network communicate using encrypted WireGuard VPN tunnels.
-
-Hybrid connectivity enables:
-
-- Secure administration
-- Private resource access
-- Identity integration
-- Backup and recovery
-- Infrastructure management
+| Resource | Address |
+|----------|---------|
+| VNet | 10.1.0.0/16 |
+| Public Subnet | 10.1.1.0/24 |
+| WireGuard Tunnel | 172.168.100.2/24 |
 
 ---
 
-# Site-to-Site VPN Architecture
+## VPN Tunnel
 
-The Enterprise Hybrid Cloud Platform uses a secure **WireGuard site-to-site VPN** to connect AWS, Azure, and the on-premises environment into a single hybrid network.
+| Network | Address |
+|----------|---------|
+| WireGuard Tunnel | 172.168.100.0/24 |
 
-A **hub-and-spoke** topology has been selected, with AWS serving as the central VPN hub. Azure and the on-premises environment each maintain an encrypted WireGuard tunnel to AWS. Traffic between Azure and the on-premises environment is securely routed through the AWS hub.
+---
 
-This design simplifies routing, reduces operational complexity, lowers infrastructure costs, and provides a scalable foundation for future expansion.
+# Communication Flow
 
-### Hybrid VPN Topology
+## Administrative Access
+
+Administrators connect securely to both VPN gateways using SSH key authentication.
 
 ```
-                 AWS
-          WireGuard Hub
-           /          \
-          /            \
-     Azure          On-Premises
+Administrator
+      │
+      ▼
+SSH
+      │
+      ▼
+AWS EC2 / Azure VM
 ```
 
-Additional VPN implementation details, routing design, and security considerations are documented in **07-vpn-architecture.md**.
+---
+
+## VPN Traffic
+
+Traffic destined for the remote cloud network is automatically routed through the WireGuard interface.
+
+AWS
+
+```
+10.0.0.0/16
+        │
+        ▼
+wg0
+        │
+Encrypted Tunnel
+        │
+wg0
+        ▼
+10.1.0.0/16
+```
+
+The same process occurs in the opposite direction for Azure.
 
 ---
 
-# Network Design Principles
+# Routing Design
 
-The architecture follows modern enterprise networking best practices.
+AWS advertises:
 
-Key principles include:
+```
+10.1.0.0/16
+```
 
-- Defense in depth
-- Least privilege access
-- Network segmentation
-- Private networking by default
-- High availability
-- Scalability
-- Secure hybrid connectivity
-- Infrastructure automation
+Azure advertises:
 
----
+```
+10.0.0.0/16
+```
 
-# Supporting Documentation
+The VPN gateways forward only traffic destined for the remote private network.
 
-This document provides a high-level overview of the platform architecture.
-
-Additional implementation details are documented separately:
-
-| Document | Description |
-|----------|-------------|
-| 04-ip-addressing.md | Enterprise IP addressing plan |
-| 05-aws-network.md | AWS infrastructure design |
-| 06-azure-network.md | Azure infrastructure design |
-| 07-vpn-architecture.md | WireGuard VPN architecture |
+Internet-bound traffic remains local to each cloud provider.
 
 ---
 
-# Summary
+# Security Architecture
 
-The Enterprise Hybrid Cloud Platform combines public cloud services, enterprise identity, secure networking, and on-premises infrastructure into a single hybrid environment. By integrating AWS, Azure, Cloudflare, and a WireGuard-based VPN architecture, the platform demonstrates modern enterprise design principles while providing a scalable foundation for cloud engineering, networking, cybersecurity, automation, and application deployment.
+The network is protected using multiple security layers.
+
+## AWS
+
+- Security Groups
+- SSH Key Authentication
+- Elastic IP
+- WireGuard Encryption
+
+---
+
+## Azure
+
+- Network Security Groups
+- SSH Key Authentication
+- Static Public IP
+- WireGuard Encryption
+
+---
+
+## Linux
+
+- Ubuntu Server
+- IP Forwarding
+- WireGuard
+- Public Key Authentication
+
+---
+
+# VPN Architecture
+
+The VPN consists of two Linux gateways.
+
+AWS
+
+```
+172.168.100.1
+```
+
+Azure
+
+```
+172.168.100.2
+```
+
+Each gateway exchanges only public keys and authenticates all VPN traffic using WireGuard.
+
+---
+
+# Verification
+
+The completed architecture was verified through:
+
+- Successful WireGuard tunnel establishment
+- Successful VPN handshake
+- AWS → Azure WireGuard connectivity
+- Azure → AWS WireGuard connectivity
+- AWS → Azure private network communication
+- Azure → AWS private network communication
+
+Verification screenshots are stored in:
+
+```
+images/testing/verification/
+```
+
+---
+
+# Architecture Benefits
+
+This design provides:
+
+- Hybrid cloud connectivity
+- Encrypted site-to-site communication
+- Independent cloud environments
+- Private resource communication
+- Low-latency VPN connectivity
+- Enterprise-ready network segmentation
+- Secure remote administration
+- Scalable infrastructure foundation
+
+---
+
+# Technologies
+
+## Cloud
+
+- Amazon Web Services
+- Microsoft Azure
+
+## Networking
+
+- WireGuard
+- IPv4
+- TCP/IP
+- Routing
+- Site-to-Site VPN
+
+## Operating System
+
+- Ubuntu Server 24.04 LTS
+
+## Security
+
+- SSH Keys
+- Security Groups
+- Network Security Groups
+- Public Key Cryptography
+- ChaCha20 Encryption
+
+---
+
+# Skills Demonstrated
+
+- Hybrid Cloud Architecture
+- AWS Networking
+- Azure Networking
+- Linux Administration
+- WireGuard VPN
+- Network Routing
+- Cloud Security
+- Infrastructure Design
+- Enterprise Networking
+- Technical Documentation
+
+---
+
+# Outcome
+
+A secure enterprise hybrid cloud architecture was successfully designed and implemented using AWS and Microsoft Azure. The completed solution establishes encrypted communication between independent cloud environments using a WireGuard site-to-site VPN while maintaining separate private address spaces, secure administrative access, and routed connectivity for future enterprise services.

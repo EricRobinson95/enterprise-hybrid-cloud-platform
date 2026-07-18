@@ -1,349 +1,217 @@
 # 05 - AWS Network
 
-## Overview
+# Overview
 
-The AWS environment hosts the public-facing infrastructure for the Enterprise Hybrid Cloud Platform. It provides secure connectivity to the Internet, hosts the WireGuard VPN gateway, and serves as the cloud platform for future application workloads.
-
-The AWS network is designed using enterprise networking best practices, including network segmentation, least privilege, dedicated routing, and secure communication with Microsoft Azure through a site-to-site WireGuard VPN.
+This document describes the Amazon Web Services (AWS) networking infrastructure used within the Enterprise Hybrid Cloud Platform. The AWS environment provides secure cloud networking, internet connectivity, and one endpoint of the WireGuard site-to-site VPN connecting AWS and Microsoft Azure.
 
 ---
 
-# AWS Region
+# Objectives
 
-| Setting | Value |
-|----------|-------|
-| Region | US East (Ohio) (us-east-2) |
-| Availability Zone | us-east-2a |
+- Build a secure AWS Virtual Private Cloud (VPC).
+- Create public and private subnets.
+- Configure Internet connectivity.
+- Deploy an Ubuntu WireGuard gateway.
+- Secure resources using Security Groups.
+- Integrate AWS with Azure through a WireGuard site-to-site VPN.
 
 ---
 
-# VPC Configuration
+# AWS Architecture
+
+The AWS environment consists of:
+
+- Virtual Private Cloud (VPC)
+- Public Subnet
+- Internet Gateway
+- Route Tables
+- Security Groups
+- Elastic IP Address
+- Ubuntu Server 24.04 LTS EC2 Instance
+- WireGuard VPN Gateway
+
+---
+
+# Virtual Private Cloud (VPC)
 
 | Setting | Value |
 |----------|-------|
-| Name | production-aws-vpc |
 | CIDR Block | 10.0.0.0/16 |
 | DNS Resolution | Enabled |
 | DNS Hostnames | Enabled |
-| IPv6 | Disabled |
-
-### Why /16?
-
-The VPC uses a **/16** CIDR block to provide a large address space for future growth.
-
-Benefits include:
-
-- Support for many additional subnets
-- Easier network segmentation
-- Room for production, development, testing, and disaster recovery environments
-- Simplified future expansion without redesigning the network
 
 ---
 
-# Subnet Design
+# Subnets
 
 ## Public Subnet
 
 | Setting | Value |
 |----------|-------|
-| Name | public-subnet |
-| CIDR | 10.0.1.0/24 |
+| CIDR Block | 10.0.1.0/24 |
 | Purpose | Internet-facing resources |
+| Auto Assign Public IP | Enabled |
 
-Hosts:
-
-- WireGuard VPN Gateway
-- Future Application Load Balancer (ALB)
-
-Characteristics:
-
-- Associated with Public Route Table
-- Internet access through Internet Gateway
-- Public IP addresses enabled when required
-
----
-
-## Private Application Subnet
-
-| Setting | Value |
-|----------|-------|
-| Name | private-application-subnet |
-| CIDR | 10.0.2.0/24 |
-| Purpose | Application servers |
-
-Characteristics:
-
-- No direct Internet access
-- Receives traffic only from trusted resources
-- Future application servers and containers
-
----
-
-## Private Database Subnet
-
-| Setting | Value |
-|----------|-------|
-| Name | private-database-subnet |
-| CIDR | 10.0.3.0/24 |
-| Purpose | Database tier |
-
-Characteristics:
-
-- Completely isolated from the Internet
-- Accessible only by approved application servers
-- Future Amazon RDS deployment
+The WireGuard gateway resides within the public subnet and uses an Elastic IP for secure remote access and VPN connectivity.
 
 ---
 
 # Internet Gateway
 
-## Name
+An Internet Gateway (IGW) is attached to the VPC to provide inbound and outbound Internet access.
 
-```
-production-internet-gateway
-```
+Route Table:
 
-Purpose:
-
-Provides Internet connectivity between the AWS VPC and the public Internet.
-
-The Internet Gateway is attached directly to the production VPC and is used by the public route table to provide outbound and inbound Internet communication.
+| Destination | Target |
+|-------------|--------|
+| 0.0.0.0/0 | Internet Gateway |
 
 ---
 
 # Route Tables
 
-## Public Route Table
-
-Name
-
-```
-production-public-route-table
-```
-
-Routes
+The public route table includes:
 
 | Destination | Target |
-|------------|---------|
+|-------------|--------|
 | 10.0.0.0/16 | Local |
 | 0.0.0.0/0 | Internet Gateway |
 
-Associated Subnets
-
-- public-subnet
-
-Purpose
-
-Allows Internet-bound traffic from the public subnet to leave the VPC through the Internet Gateway while maintaining local communication inside the VPC.
+Additional routing for Azure private networks is handled by the WireGuard VPN.
 
 ---
 
-## Default Route Table
+# Security Groups
 
-The default route table remains in the VPC but is not used for production workloads.
+The WireGuard gateway uses a Security Group configured with the following inbound rules.
 
-All production resources use dedicated route tables to improve security, organization, and scalability.
+| Protocol | Port | Purpose |
+|----------|------|---------|
+| SSH | 22 | Remote administration |
+| UDP | 51820 | WireGuard VPN |
+
+Outbound traffic is allowed to all destinations.
 
 ---
 
-# EC2 WireGuard Gateway
+# Elastic IP
 
-## Instance Information
+A static Elastic IP is associated with the EC2 instance.
+
+Benefits include:
+
+- Persistent public endpoint
+- Stable VPN endpoint
+- Reliable SSH connectivity
+- No IP changes after reboot
+
+---
+
+# EC2 Instance
 
 | Setting | Value |
 |----------|-------|
-| Name | production-wireguard-gateway |
-| Operating System | Ubuntu Server 26.04 LTS |
-| Architecture | x86 (amd64) |
-| Instance Type | t3.micro |
-| Storage | 8 GiB gp3 SSD |
-| Placement | public-subnet |
+| Operating System | Ubuntu Server 24.04 LTS |
+| Instance Role | WireGuard Gateway |
+| Placement | Public Subnet |
 
-Purpose
-
-This EC2 instance serves as the secure VPN gateway between AWS and Microsoft Azure.
-
-Responsibilities include:
-
-- Hosting the WireGuard VPN service
-- Encrypting and decrypting VPN traffic
-- Routing traffic between AWS and Azure
-- Acting as the secure entry point into the AWS environment
+The EC2 instance acts as the AWS VPN gateway for all encrypted communication with Azure.
 
 ---
 
-# Network Interface (ENI)
+# WireGuard VPN Integration
 
-Every EC2 instance connects to the VPC through an Elastic Network Interface (ENI).
+The AWS gateway establishes a secure encrypted tunnel with Microsoft Azure.
 
-The ENI is responsible for:
+## WireGuard Interface
 
-- Private IP addressing
-- MAC address
-- Security Group association
-- Public IP association
-- Communication with the subnet
+| Setting | Value |
+|----------|-------|
+| Interface | wg0 |
+| Tunnel Address | 172.168.100.1/24 |
+| Listen Port | 51820 |
 
-Understanding the ENI is important because security groups are applied to the network interface rather than directly to the EC2 instance.
+## Routed Networks
 
----
+| Destination | Route |
+|-------------|-------|
+| Azure VNet | 10.1.0.0/16 |
+| Azure WireGuard Peer | 172.168.100.2/32 |
 
-# Security Group
-
-## Name
-
-```
-production-wireguard-sg
-```
-
-### Inbound Rules
-
-| Protocol | Port | Source | Purpose |
-|----------|------|--------|---------|
-| TCP | 22 | Administrator Public IP (/32) | SSH Administration |
-| UDP | 51820 | 0.0.0.0/0 | WireGuard VPN Clients |
-
-### Outbound Rules
-
-| Protocol | Destination | Purpose |
-|----------|-------------|---------|
-| All Traffic | 0.0.0.0/0 | Outbound communication |
-
-The security group follows the Principle of Least Privilege by restricting administrative SSH access to the administrator's public IP while allowing WireGuard VPN traffic from authorized clients.
+The WireGuard configuration routes Azure network traffic through the encrypted VPN tunnel.
 
 ---
 
-# Public IP Addressing
+# Network Diagram
 
-The WireGuard gateway receives:
-
-- Private IPv4 Address (10.0.1.0/24)
-- Public IPv4 Address
-
-The public IP allows:
-
-- SSH administration
-- WireGuard VPN connectivity
-
-Future enhancement:
-
-The temporary public IP will be replaced with an Elastic IP to provide a permanent VPN endpoint.
-
----
-
-# Traffic Flow
-
-## Administrative SSH Access
-
-```
-Administrator Laptop
-        │
-        ▼
-Public Internet
-        │
-        ▼
-Internet Gateway
-        │
-        ▼
-Public Route Table
-        │
-        ▼
-Public Subnet
-        │
-        ▼
-Security Group
-        │
-        ▼
-production-wireguard-gateway
+```text
+                 Internet
+                     │
+             Elastic IP Address
+                     │
+          Ubuntu WireGuard Gateway
+               10.0.1.40
+          WireGuard: 172.168.100.1
+                     │
+══════════════════════════════════════
+      Encrypted WireGuard VPN Tunnel
+══════════════════════════════════════
+                     │
+            Azure WireGuard Gateway
 ```
 
 ---
 
-## WireGuard VPN Traffic
+# Connectivity Verification
 
-```
-Azure Virtual Network
-        │
-Encrypted WireGuard Tunnel
-        │
-        ▼
-Public Internet
-        │
-        ▼
-Internet Gateway
-        │
-        ▼
-production-wireguard-gateway
-        │
-Decrypt
-        │
-Routing
-        │
-Forward to AWS Resources
+The AWS environment successfully communicated with:
+
+- Azure WireGuard interface
+- Azure private virtual network
+- Azure Ubuntu virtual machine
+
+Verification completed using:
+
+- WireGuard handshake
+- ICMP testing
+- Private network routing
+- End-to-end VPN validation
+
+See:
+
+```text
+documentation/09-wireguard-site-to-site-vpn.md
 ```
 
 ---
 
-# Current AWS Infrastructure
+# Security Features
 
-Completed
+- VPC network isolation
+- Security Groups
+- SSH authentication using key pairs
+- Elastic IP for stable VPN endpoint
+- Encrypted WireGuard tunnel
+- Public key cryptography
+- Linux IP forwarding
 
-- Production VPC
-- Public Subnet
-- Private Application Subnet
-- Private Database Subnet
+---
+
+# Skills Demonstrated
+
+- Amazon VPC
+- EC2 Administration
+- Ubuntu Linux
+- Elastic IP Management
+- Security Groups
+- Route Tables
 - Internet Gateway
-- Public Route Table
-- Public Route Association
-- Ubuntu EC2 Instance
-- WireGuard Security Group
-- SSH Key Pair
-- IAM Administrator Account
-- MFA Enabled
-
-In Progress
-
-- WireGuard Installation
-- Azure VPN Gateway Configuration
-- Static Route Configuration
-- Cloudflare Integration
-
-Planned
-
-- NAT Gateway
-- Elastic IP
-- Application Load Balancer
-- Auto Scaling
-- ECS Containers
-- Amazon RDS
-- CloudWatch Monitoring
-- AWS Backup
+- WireGuard VPN
+- Hybrid Cloud Networking
+- Network Verification
 
 ---
 
-# Design Decisions
+# Outcome
 
-- Dedicated VPC for complete network isolation.
-- /16 VPC provides long-term scalability.
-- Separate public and private subnets improve security.
-- Dedicated public route table simplifies routing management.
-- Ubuntu Server LTS selected for long-term stability.
-- t3.micro selected because the WireGuard gateway has low CPU and memory requirements.
-- SSH access restricted to the administrator's public IP.
-- WireGuard uses UDP port 51820.
-- Security groups implement stateful firewall protection.
-- Public resources are isolated from future private application and database workloads.
-- Hybrid cloud communication is secured using WireGuard site-to-site VPN.
-
----
-
-# Future Improvements
-
-- Replace temporary public IP with an Elastic IP.
-- Deploy NAT Gateway for private subnet Internet access.
-- Create private route tables.
-- Deploy application servers in the private subnet.
-- Deploy Amazon RDS in the database subnet.
-- Implement CloudWatch monitoring and alarms.
-- Manage infrastructure using Terraform.
-- Automate deployments through Infrastructure as Code.
+A secure AWS networking environment was successfully deployed to support a hybrid cloud architecture. The AWS EC2 instance functions as the WireGuard VPN gateway, providing encrypted connectivity to Microsoft Azure while maintaining secure access to private AWS resources over the site-to-site VPN.
