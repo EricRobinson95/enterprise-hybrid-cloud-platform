@@ -2,272 +2,272 @@
 
 # Overview
 
-This document describes the IP addressing scheme used throughout the Enterprise Hybrid Cloud Platform. The addressing plan provides unique, non-overlapping private networks for Amazon Web Services (AWS), Microsoft Azure, and the WireGuard VPN tunnel.
+This document defines the IP addressing scheme used throughout the Enterprise Hybrid Cloud Platform.
 
-Using separate address spaces allows secure routed communication between cloud providers without requiring Network Address Translation (NAT).
-
----
-
-# Objectives
-
-- Create a scalable IP addressing plan.
-- Prevent overlapping private networks.
-- Separate cloud infrastructure into logical networks.
-- Provide dedicated addressing for the WireGuard tunnel.
-- Support future enterprise services.
+The environment uses private RFC 1918 IPv4 address space and is segmented across Amazon Web Services (AWS), Microsoft Azure, and an on-premises security lab. Each environment has its own dedicated network to simplify routing, improve security, and support future scalability.
 
 ---
 
-# Network Summary
+# IP Addressing Objectives
 
-| Network | CIDR | Purpose |
-|----------|------|---------|
-| AWS VPC | 10.0.0.0/16 | AWS Private Network |
-| Azure VNet | 10.1.0.0/16 | Azure Private Network |
-| WireGuard Tunnel | 172.168.100.0/24 | VPN Tunnel Network |
-
----
-
-# AWS Addressing
-
-## Virtual Private Cloud
-
-| Setting | Value |
-|----------|-------|
-| CIDR Block | 10.0.0.0/16 |
+- Provide unique address space for each environment
+- Eliminate overlapping networks
+- Simplify static routing
+- Support WireGuard site-to-site VPN connectivity
+- Separate production, corporate, and security environments
+- Allow future expansion
 
 ---
 
-## Public Subnet
+# Enterprise Address Space
 
-| Setting | Value |
-|----------|-------|
-| CIDR Block | 10.0.1.0/24 |
-| Purpose | Internet-facing infrastructure |
-
----
-
-## WireGuard Gateway
-
-| Resource | Address |
-|----------|---------|
-| EC2 Private IP | 10.0.1.40 |
-| WireGuard Interface | 172.168.100.1/24 |
+| Environment | Network | Purpose |
+|------------|----------|----------|
+| AWS | 10.0.0.0/16 | Production Environment |
+| Azure | 10.1.0.0/16 | Corporate IT |
+| On-Premises | 10.2.0.0/16 | Security Operations |
+| WireGuard Tunnel | 172.16.100.0/24 | VPN Transit Network |
 
 ---
 
-# Azure Addressing
+# AWS Production Environment
 
-## Virtual Network
+Network
 
-| Setting | Value |
-|----------|-------|
-| Address Space | 10.1.0.0/16 |
+```
+10.0.0.0/16
+```
+
+## Subnets
+
+| Subnet | Network | Purpose |
+|---------|----------|----------|
+| Public Subnet | 10.0.1.0/24 | Load Balancer, WireGuard Gateway |
+| Application Subnet | 10.0.2.0/24 | React & FastAPI |
+| Database Subnet | 10.0.3.0/24 | PostgreSQL |
 
 ---
 
-## Public Subnet
+## Planned Resources
 
-| Setting | Value |
-|----------|-------|
-| CIDR Block | 10.1.1.0/24 |
-| Purpose | Internet-facing infrastructure |
+| Resource | Private IP |
+|-----------|------------|
+| WireGuard Hub | 10.0.1.40 |
+| Application Load Balancer | Dynamic |
+| React Application | Dynamic |
+| FastAPI Server | Dynamic |
+| PostgreSQL Database | Dynamic |
 
 ---
 
-## WireGuard Gateway
+# Azure Corporate Environment
 
-| Resource | Address |
-|----------|---------|
-| VM Private IP | 10.1.1.4 |
-| WireGuard Interface | 172.168.100.2/24 |
+Network
+
+```
+10.1.0.0/16
+```
+
+## Subnets
+
+| Subnet | Network | Purpose |
+|---------|----------|----------|
+| Public Subnet | 10.1.1.0/24 | WireGuard Gateway |
+| Identity Services Subnet | 10.1.2.0/24 | Active Directory & DNS |
+| Developer Subnet | 10.1.3.0/24 | Windows 11 Developer Workstation |
+| Infrastructure Services Subnet | 10.1.4.0/24 | File Server & Internal Applications |
+
+---
+
+## Planned Resources
+
+| Resource | Private IP |
+|-----------|------------|
+| Ubuntu WireGuard Gateway | 10.1.1.4 |
+| Windows Server 2025 | 10.1.2.10 |
+| Windows File Server | 10.1.4.10 |
+| Internal Application Server | 10.1.4.20 |
+| Windows 11 Developer Workstation | 10.1.3.10 |
+
+---
+
+# On-Premises Security Lab
+
+Network
+
+```
+10.2.0.0/16
+```
+
+## Subnets
+
+| Subnet | Network | Purpose |
+|---------|----------|----------|
+| Public Subnet | 10.2.1.0/24 | WireGuard Gateway |
+| Security Operations Subnet | 10.2.2.0/24 | Kali Linux |
+| Security Testing Subnet | 10.2.3.0/24 | Security Test Workstation |
+
+---
+
+## Planned Resources
+
+| Resource | Private IP |
+|-----------|------------|
+| Ubuntu WireGuard Gateway | 10.2.1.12 |
+| Kali Linux | 10.2.2.10 |
+| Security Test Workstation | 10.2.3.10 |
 
 ---
 
 # WireGuard Tunnel Network
 
-The WireGuard VPN uses its own dedicated subnet.
+Network
 
-| Resource | Address |
-|----------|---------|
-| Tunnel Network | 172.168.100.0/24 |
-| AWS Gateway | 172.168.100.1 |
-| Azure Gateway | 172.168.100.2 |
+```
+172.16.100.0/24
+```
 
-The tunnel network is used exclusively for VPN communication between the AWS and Azure gateways.
+## Tunnel Addresses
+
+| Device | Tunnel IP |
+|----------|-----------|
+| AWS WireGuard Hub | 172.16.100.1 |
+| Azure WireGuard Gateway | 172.16.100.2 |
+| On-Premises WireGuard Gateway | 172.16.100.3 |
 
 ---
 
-# Address Allocation Diagram
+# Network Summary
 
-```text
-AWS
-──────────────────────────────────
-
-VPC
+```
+AWS Production
 10.0.0.0/16
 
-└── Public Subnet
-    10.0.1.0/24
+├── 10.0.1.0/24 Public
+├── 10.0.2.0/24 Application
+└── 10.0.3.0/24 Database
 
-        EC2 WireGuard Gateway
-        10.0.1.40
 
-        WireGuard Interface
-        172.168.100.1
-
-══════════════════════════════════════
-
-WireGuard Tunnel
-
-172.168.100.0/24
-
-══════════════════════════════════════
-
-Azure
-
-Virtual Network
+Azure Corporate
 10.1.0.0/16
 
-└── Public Subnet
-    10.1.1.0/24
+├── 10.1.1.0/24 Public
+├── 10.1.2.0/24 Identity Services
+├── 10.1.3.0/24 Developer
+└── 10.1.4.0/24 Infrastructure
 
-        Azure WireGuard VM
-        10.1.1.4
 
-        WireGuard Interface
-        172.168.100.2
+On-Premises Security Lab
+10.2.0.0/16
+
+├── 10.2.1.0/24 Public
+├── 10.2.2.0/24 Security Operations
+└── 10.2.3.0/24 Security Testing
 ```
 
 ---
 
-# Addressing Design
-
-The addressing plan separates infrastructure into three logical networks.
-
-## AWS Network
+# VPN Transit Network
 
 ```
-10.0.0.0/16
-```
+172.16.100.0/24
 
-Contains:
+AWS Hub
+172.16.100.1
 
-- EC2 Instances
-- Future application servers
-- Future databases
-- AWS infrastructure
+Azure Gateway
+172.16.100.2
 
----
-
-## Azure Network
-
-```
-10.1.0.0/16
-```
-
-Contains:
-
-- Azure Virtual Machines
-- Future Active Directory
-- Future DNS
-- Future File Services
-
----
-
-## WireGuard Network
-
-```
-172.168.100.0/24
-```
-
-Contains:
-
-- AWS WireGuard interface
-- Azure WireGuard interface
-
-No production workloads reside on the WireGuard subnet.
-
----
-
-# Routing Relationships
-
-AWS routes the following network through the VPN:
-
-```
-10.1.0.0/16
-```
-
-Azure routes the following network through the VPN:
-
-```
-10.0.0.0/16
-```
-
-The WireGuard tunnel itself uses:
-
-```
-172.168.100.0/24
+On-Premises Gateway
+172.16.100.3
 ```
 
 ---
 
 # Addressing Strategy
 
-The IP addressing plan was designed to:
+The addressing plan follows a simple hierarchical structure.
 
-- Eliminate overlapping address ranges.
-- Simplify VPN routing.
-- Support future network expansion.
-- Maintain clear separation between cloud providers.
-- Enable enterprise-scale growth.
+```
+10.0.x.x
 
----
-
-# Benefits
-
-This addressing design provides:
-
-- Predictable addressing
-- Simplified troubleshooting
-- Secure hybrid networking
-- Scalable cloud infrastructure
-- Clean routing between cloud providers
-- No requirement for Network Address Translation (NAT)
-
----
-
-# Verification
-
-The addressing plan was successfully validated through:
-
-- WireGuard tunnel establishment
-- Successful peer handshake
-- AWS to Azure connectivity
-- Azure to AWS connectivity
-- Private IP communication across both cloud providers
-
-Verification screenshots are available in:
-
-```text
-images/testing/verification/
+AWS Production
 ```
 
+```
+10.1.x.x
+
+Azure Corporate
+```
+
+```
+10.2.x.x
+
+On-Premises Security
+```
+
+This structure makes the environment easy to understand and simplifies troubleshooting.
+
 ---
 
-# Skills Demonstrated
+# Routing Summary
 
-- IPv4 Addressing
-- CIDR Subnetting
-- AWS Networking
-- Azure Networking
-- Hybrid Cloud Design
-- VPN Address Planning
-- Enterprise Network Architecture
-- Routing Design
+| Source | Destination | Route |
+|----------|-------------|-------|
+| AWS | Azure | WireGuard |
+| AWS | On-Premises | WireGuard |
+| Azure | AWS | WireGuard |
+| On-Premises | AWS | WireGuard |
+
+Current implementation uses AWS as the central routing hub.
 
 ---
 
-# Outcome
+# Reserved Address Space
 
-A structured IP addressing scheme was successfully implemented for the Enterprise Hybrid Cloud Platform. Independent private networks for AWS, Azure, and the WireGuard tunnel provide a scalable foundation for secure hybrid cloud communication while enabling routed connectivity without Network Address Translation.
+The following address ranges remain available for future expansion.
+
+| Network | Purpose |
+|----------|----------|
+| 10.0.4.0/24 - 10.0.255.0/24 | Additional AWS Services |
+| 10.1.5.0/24 - 10.1.255.0/24 | Additional Azure Services |
+| 10.2.4.0/24 - 10.2.255.0/24 | Additional On-Premises Networks |
+
+---
+
+# Future Expansion
+
+Future infrastructure may include:
+
+## AWS
+
+- Bastion Host
+- Container Services
+- Kubernetes Cluster
+- Monitoring Servers
+
+---
+
+## Azure
+
+- Microsoft Entra ID Integration
+- Azure Bastion
+- Backup Services
+- Update Management
+
+---
+
+## On-Premises
+
+- SIEM
+- Logging Server
+- Vulnerability Scanner
+- Additional Security Workstations
+
+---
+
+# Summary
+
+The Enterprise Hybrid Cloud Platform uses a structured private IPv4 addressing scheme that separates production, corporate IT, and security operations into dedicated networks.
+
+The addressing plan supports secure WireGuard site-to-site VPN connectivity, simplifies routing, avoids overlapping address space, and provides sufficient capacity for future growth while maintaining a clear and scalable enterprise network design.

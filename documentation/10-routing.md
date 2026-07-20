@@ -2,313 +2,309 @@
 
 # Overview
 
-This document describes the routing architecture used within the Enterprise Hybrid Cloud Platform. Routing enables secure communication between the Amazon Web Services (AWS) Virtual Private Cloud (VPC) and the Microsoft Azure Virtual Network (VNet) through an encrypted WireGuard site-to-site VPN.
+The Enterprise Hybrid Cloud Platform uses static IPv4 routing to provide secure communication between Amazon Web Services (AWS), Microsoft Azure, and the on-premises security lab.
 
-The routing design allows private resources in each cloud provider to communicate directly while maintaining independent network boundaries and avoiding Network Address Translation (NAT).
+All inter-site traffic traverses encrypted WireGuard VPN tunnels using a **hub-and-spoke topology**, with AWS acting as the central routing hub.
 
 ---
 
-# Objectives
+# Routing Objectives
 
-- Enable communication between AWS and Azure private networks.
-- Route private traffic through the WireGuard VPN tunnel.
-- Preserve original source and destination IP addresses.
-- Prevent overlapping network conflicts.
-- Provide a scalable enterprise routing design.
+- Provide secure communication between all connected environments
+- Centralize routing through AWS
+- Maintain isolated network segments
+- Prevent overlapping address spaces
+- Support future enterprise services and application deployment
+- Simulate a real-world hybrid cloud network
 
 ---
 
 # Network Addressing
 
-## AWS
-
-| Network | CIDR |
-|----------|------|
-| VPC | 10.0.0.0/16 |
-| Public Subnet | 10.0.1.0/24 |
-| WireGuard Tunnel | 172.168.100.1/24 |
-
----
-
-## Azure
-
-| Network | CIDR |
-|----------|------|
-| VNet | 10.1.0.0/16 |
-| Public Subnet | 10.1.1.0/24 |
-| WireGuard Tunnel | 172.168.100.2/24 |
+| Environment | Network |
+|------------|---------|
+| AWS | 10.0.0.0/16 |
+| Azure | 10.1.0.0/16 |
+| On-Premises | 10.2.0.0/16 |
+| WireGuard Tunnel | 172.16.100.0/24 |
 
 ---
 
-# Routing Topology
+# Routing Architecture
 
 ```
-                 AWS VPC
-              10.0.0.0/16
-                    │
-                    │
-          WireGuard Gateway
-          172.168.100.1
-                    │
-══════════════════════════════════════
-      Encrypted WireGuard Tunnel
-══════════════════════════════════════
-                    │
-          172.168.100.2
-          WireGuard Gateway
-                    │
-                    │
-              Azure VNet
-              10.1.0.0/16
+                    AWS Hub
+                 10.0.0.0/16
+              WireGuard Gateway
+               172.16.100.1
+                  /       \
+                 /         \
+                /           \
+               ▼             ▼
+
+Azure                    On-Premises
+10.1.0.0/16             10.2.0.0/16
+172.16.100.2            172.16.100.3
 ```
+
+AWS functions as the central routing point for all VPN-connected environments.
+
+---
+
+# Route Advertisement
+
+Each WireGuard gateway advertises its local network.
+
+| Gateway | Advertised Networks |
+|----------|---------------------|
+| AWS | 10.0.0.0/16 |
+| Azure | 10.1.0.0/16 |
+| On-Premises | 10.2.0.0/16 |
 
 ---
 
 # AWS Routing
 
-The AWS gateway routes traffic destined for Azure through the WireGuard interface.
+AWS serves as the hub for the hybrid cloud environment.
 
-## Local Routes
+## Responsibilities
 
-| Destination | Purpose |
-|-------------|---------|
-| 10.0.0.0/16 | Local AWS VPC |
+- Route traffic between VPN-connected environments
+- Forward packets through WireGuard
+- Maintain VPN connectivity
+- Provide access to production services
 
-## Remote Routes
+### Linux Routes
 
-| Destination | Interface |
-|-------------|-----------|
-| 10.1.0.0/16 | wg0 |
+```
+10.1.0.0/16 dev wg0
 
-Traffic destined for Azure is encrypted before leaving the AWS gateway.
+10.2.0.0/16 dev wg0
+
+172.16.100.0/24 dev wg0
+
+default via 10.0.1.1 dev ens5
+```
 
 ---
 
 # Azure Routing
 
-The Azure gateway routes traffic destined for AWS through the WireGuard interface.
+Azure routes remote traffic through the WireGuard gateway.
 
-## Local Routes
-
-| Destination | Purpose |
-|-------------|---------|
-| 10.1.0.0/16 | Local Azure VNet |
-
-## Remote Routes
-
-| Destination | Interface |
-|-------------|-----------|
-| 10.0.0.0/16 | wg0 |
-
-Traffic destined for AWS is encrypted before leaving the Azure gateway.
-
----
-
-# WireGuard Routing
-
-WireGuard automatically installs routes based on the `AllowedIPs` configuration.
-
-## AWS
-
-```conf
-AllowedIPs = 10.1.0.0/16,172.168.100.2/32
-```
-
-This creates routes for:
-
-- Azure Virtual Network
-- Azure WireGuard tunnel interface
-
----
-
-## Azure
-
-```conf
-AllowedIPs = 10.0.0.0/16,172.168.100.1/32
-```
-
-This creates routes for:
-
-- AWS Virtual Private Cloud
-- AWS WireGuard tunnel interface
-
----
-
-# IP Forwarding
-
-Both VPN gateways function as routers.
-
-IPv4 forwarding is enabled on each Linux gateway.
-
-```conf
-net.ipv4.ip_forward=1
-```
-
-This allows packets arriving on one interface to be forwarded to another interface.
-
-Without IP forwarding, the VPN tunnel would establish successfully, but traffic would not traverse between the AWS and Azure private networks.
-
----
-
-# Routing Process
-
-## AWS to Azure
-
-1. AWS resource sends traffic to an Azure private IP.
-2. Linux routing table forwards traffic to `wg0`.
-3. WireGuard encrypts the packet.
-4. Packet traverses the Internet.
-5. Azure WireGuard gateway decrypts the packet.
-6. Azure forwards the packet to the destination VM.
-
----
-
-## Azure to AWS
-
-1. Azure resource sends traffic to an AWS private IP.
-2. Linux routing table forwards traffic to `wg0`.
-3. WireGuard encrypts the packet.
-4. Packet traverses the Internet.
-5. AWS WireGuard gateway decrypts the packet.
-6. AWS forwards the packet to the destination EC2 instance.
-
----
-
-# Routing Without NAT
-
-This implementation intentionally uses routed networking instead of Network Address Translation (NAT).
-
-Reasons include:
-
-- Non-overlapping private networks
-- End-to-end visibility of source IP addresses
-- Simpler troubleshooting
-- Improved logging and auditing
-- Enterprise networking best practices
-
-AWS Network
+### Linux Routes
 
 ```
-10.0.0.0/16
+10.0.0.0/16 dev wg0
+
+172.16.100.0/24 dev wg0
+
+default via Azure Virtual Network Gateway
 ```
 
-Azure Network
+Azure advertises:
 
 ```
 10.1.0.0/16
 ```
 
-Since these networks do not overlap, address translation is unnecessary.
+---
+
+# On-Premises Routing
+
+The Ubuntu WireGuard gateway routes traffic between the on-premises security lab and AWS.
+
+### Linux Routes
+
+```
+10.0.0.0/16 dev wg0
+
+172.16.100.0/24 dev wg0
+
+default via Local Gateway
+```
+
+The gateway advertises:
+
+```
+10.2.0.0/16
+```
+
+---
+
+# IP Forwarding
+
+WireGuard gateways perform Layer 3 forwarding between local interfaces and the VPN tunnel.
+
+Linux IP forwarding is enabled on all VPN gateways.
+
+Verification
+
+```bash
+sysctl net.ipv4.ip_forward
+```
+
+Expected output
+
+```
+net.ipv4.ip_forward = 1
+```
 
 ---
 
 # Route Verification
 
-Routes can be viewed with:
+Linux routing tables are verified using:
 
 ```bash
 ip route
 ```
 
-WireGuard interface:
+Example
 
-```bash
-ip addr show wg0
 ```
+10.1.0.0/16 dev wg0
 
-Tunnel status:
+10.2.0.0/16 dev wg0
 
-```bash
-sudo wg
-```
-
----
-
-# Connectivity Verification
-
-Successful routing was verified through the following tests.
-
-## Tunnel Connectivity
-
-AWS
-
-```bash
-ping 172.168.100.2
-```
-
-Azure
-
-```bash
-ping 172.168.100.1
+172.16.100.0/24 dev wg0
 ```
 
 ---
 
-## Private Network Connectivity
+# Route Lookup
 
-AWS
-
-```bash
-ping 10.1.1.4
-```
-
-Azure
+Individual route selection can be verified using:
 
 ```bash
-ping 10.0.1.40
+ip route get <destination-ip>
 ```
 
-All tests completed successfully.
+Example
 
----
-
-# Verification Screenshots
-
-```
-images/testing/verification/
+```bash
+ip route get 10.1.1.4
 ```
 
-Included screenshots demonstrate:
+---
 
-- WireGuard handshake
-- Tunnel connectivity
-- AWS to Azure communication
-- Azure to AWS communication
-- Private network routing
+# Path Verification
+
+Routing paths are validated using:
+
+```bash
+traceroute <destination>
+```
+
+Example
+
+```bash
+traceroute 10.1.1.4
+```
+
+This confirms the path selected by the Linux routing table.
 
 ---
 
-# Design Benefits
+# Packet Verification
 
-The routing design provides:
+Traffic is verified using:
 
-- Secure encrypted communication
-- Cloud-to-cloud connectivity
-- End-to-end private networking
-- No Network Address Translation
-- Simplified troubleshooting
-- Enterprise scalability
-- Low-latency communication
+```bash
+sudo tcpdump
+```
+
+Examples
+
+Capture ICMP
+
+```bash
+sudo tcpdump -ni wg0 icmp
+```
+
+Capture WireGuard
+
+```bash
+sudo tcpdump -ni any udp port 51820
+```
+
+Capture all traffic
+
+```bash
+sudo tcpdump -ni any
+```
 
 ---
 
-# Skills Demonstrated
+# Current Routing Status
 
-- Linux Routing
-- IP Forwarding
-- WireGuard VPN
-- AWS Networking
-- Azure Networking
-- Hybrid Cloud Architecture
-- TCP/IP
-- Route Tables
-- Network Verification
-- Infrastructure Documentation
+## Operational
+
+✓ AWS ↔ Azure
+
+✓ AWS ↔ On-Premises
+
+✓ Static routing
+
+✓ Linux routing
+
+✓ WireGuard routing
+
+✓ VPN tunnel routing
 
 ---
 
-# Outcome
+# Current Limitation
 
-A routed site-to-site VPN was successfully implemented between AWS and Azure.
+The current implementation uses a **hub-and-spoke** routing model.
 
-Traffic destined for remote private networks is automatically forwarded through the WireGuard tunnel, allowing resources in both cloud environments to communicate securely without exposing internal traffic to the public Internet or requiring Network Address Translation.
+AWS acts as the central routing hub.
+
+Communication between:
+
+- AWS ↔ Azure
+- AWS ↔ On-Premises
+
+is fully operational.
+
+Direct Azure ↔ On-Premises transit routing through the AWS hub has not been implemented and remains a future enhancement.
+
+This limitation does not affect the planned architecture because:
+
+- Azure hosts enterprise identity and developer services.
+- AWS hosts the production application.
+- The on-premises environment performs security testing against AWS-hosted resources.
+
+---
+
+# Routing Design Decisions
+
+The project intentionally uses static routing because it:
+
+- Simplifies configuration
+- Reduces operational complexity
+- Demonstrates enterprise network fundamentals
+- Is appropriate for a small hybrid cloud deployment
+
+Dynamic routing protocols such as BGP are planned as a future enhancement.
+
+---
+
+# Future Enhancements
+
+- BGP Dynamic Routing
+- Route Redundancy
+- High Availability VPN Gateways
+- ECMP
+- Automated Route Deployment
+- Infrastructure as Code
+- VPN Monitoring
+- Route Health Monitoring
+
+---
+
+# Summary
+
+The Enterprise Hybrid Cloud Platform uses static routing and a WireGuard hub-and-spoke VPN architecture to securely connect AWS, Azure, and the on-premises security lab.
+
+AWS serves as the central routing hub, enabling secure communication between production infrastructure, corporate services, and the security testing environment while providing a scalable foundation for future enterprise expansion.

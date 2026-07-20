@@ -1,218 +1,162 @@
 # Enterprise Hybrid Cloud Platform
 
-## Overview
+A real-world hybrid cloud infrastructure project demonstrating enterprise networking, cloud architecture, Windows administration, Linux administration, DevOps, and cybersecurity.
 
-The Enterprise Hybrid Cloud Platform is a real-world infrastructure project designed to demonstrate enterprise networking, cloud engineering, Linux administration, infrastructure automation, and secure hybrid cloud connectivity.
-
-The project combines **Amazon Web Services (AWS)**, **Microsoft Azure**, **Cloudflare**, **WireGuard VPN**, **Docker**, **Terraform**, and **GitHub** to build a secure, scalable, and production-inspired hybrid cloud environment.
-
-The objective is to simulate how organizations securely connect multiple cloud providers while following modern enterprise architecture and security best practices.
+The environment connects Amazon Web Services (AWS), Microsoft Azure, and an on-premises security lab using a WireGuard hub-and-spoke VPN topology. The long-term objective is to build and deploy a production-ready web application while managing enterprise identity, development, and security testing across multiple environments.
 
 ---
 
 # Project Goals
 
-- Design an enterprise hybrid cloud architecture.
-- Deploy secure networking infrastructure in AWS and Azure.
-- Build secure site-to-site VPN connectivity using WireGuard.
-- Host applications inside private cloud networks.
-- Implement Infrastructure as Code (Terraform).
-- Document every stage of the deployment.
-- Develop production-ready cloud engineering skills.
+- Design a real-world hybrid cloud architecture
+- Build secure site-to-site VPN connectivity
+- Deploy enterprise Active Directory infrastructure
+- Develop and deploy a production web application
+- Implement CI/CD with GitHub Actions
+- Perform security testing from an isolated on-premises lab
+- Document the complete deployment and configuration process
 
 ---
 
-# Technologies
+# Architecture Overview
 
-## Cloud
+## AWS Production Environment
 
-- Amazon Web Services (AWS)
-- Microsoft Azure
-- Cloudflare
+AWS hosts the production application and serves as the central networking hub.
 
-## Networking
-
-- WireGuard VPN
-- Virtual Private Cloud (VPC)
-- Azure Virtual Network (VNet)
-- Route Tables
-- Internet Gateway
-- Security Groups
-- Network ACLs
-- DNS
-
-## Compute
+Services include:
 
 - Amazon EC2
-- Amazon ECS (Future)
-- Azure Virtual Machines
+- WireGuard VPN Hub
+- React Frontend
+- FastAPI Backend
+- PostgreSQL Database
+- Application Load Balancer
+- Amazon S3
+- AWS IAM
+- CloudWatch
 
-## Infrastructure
-
-- Terraform
-- Git
-- GitHub
-
-## Operating Systems
-
-- Ubuntu Server 26.04 LTS
-- Linux
-
-## Containers
-
-- Docker
-- Amazon ECS (Future)
-
----
-
-# Current Architecture
+Production Network
 
 ```
-                       Internet
-                           │
-                    Cloudflare DNS
-                           │
-                Application Load Balancer
-                           │
-               AWS Public Subnet (10.0.1.0/24)
-                           │
-                ECS Application Services
-                           │
-         AWS Private Application Subnet (10.0.2.0/24)
-                           │
-                   Amazon RDS PostgreSQL
-                           │
-          AWS Private Database Subnet (10.0.3.0/24)
-                           │
-                 WireGuard VPN Gateway
-                           │
-═══════════════════════════════════════════════
-         Encrypted WireGuard VPN Tunnel
-═══════════════════════════════════════════════
-                           │
-               Azure Virtual Network
-                           │
-      Windows Infrastructure Services
+10.0.0.0/16
 ```
 
 ---
 
-# AWS Infrastructure
+## Azure Corporate Environment
 
-## Virtual Private Cloud
+Azure represents the company's corporate IT infrastructure.
 
-| Resource | Status |
-|----------|--------|
-| Production VPC | ✅ Complete |
-| Public Subnet | ✅ Complete |
-| Private Application Subnet | ✅ Complete |
-| Private Database Subnet | ✅ Complete |
-| Internet Gateway | ✅ Complete |
-| Public Route Table | ✅ Complete |
-| Route Table Associations | ✅ Complete |
+Current / Planned Services
 
----
-
-## Compute
-
-| Resource | Status |
-|----------|--------|
-| Ubuntu WireGuard Gateway | ✅ Complete |
-| Application Load Balancer | ⏳ Planned |
-| ECS Cluster | ⏳ Planned |
-| ECS Services | ⏳ Planned |
-| Auto Scaling | ⏳ Planned |
-
----
-
-## Networking
-
-| Resource | Status |
-|----------|--------|
-| Security Groups | ✅ Complete |
-| SSH Key Authentication | ✅ Complete |
-| Public IP Assignment | ✅ Complete |
-| NAT Gateway | ⏳ Planned |
-| Elastic IP | ⏳ Planned |
-
----
-
-## Security
-
-| Resource | Status |
-|----------|--------|
-| IAM Administrator | ✅ Complete |
-| Multi-Factor Authentication | ✅ Complete |
-| Least Privilege Access | ✅ Complete |
-| Enterprise Naming Convention | ✅ Complete |
-
----
-
-# Azure Infrastructure
-
-Planned Azure resources include:
-
-- Virtual Network
-- Windows Server
+- Ubuntu WireGuard Gateway
+- Windows Server 2025
 - Active Directory Domain Services
 - DNS
-- DHCP
-- File Server
-- Azure VPN Endpoint
+- Group Policy
+- Windows File Server
+- Internal Application Server
+- Windows 11 Developer Workstation
+
+Corporate Network
+
+```
+10.1.0.0/16
+```
 
 ---
 
-# Cloudflare
+## On-Premises Security Lab
 
-Cloudflare will provide:
+The on-premises environment simulates the organization's security operations lab.
 
+Services
+
+- Ubuntu WireGuard Gateway
+- Kali Linux
+- Security Testing Workstation
+
+Security tools include
+
+- Burp Suite
+- Wireshark
+- Nmap
+- OWASP ZAP
+- Custom Python Security Scripts
+
+On-Premises Network
+
+```
+10.2.0.0/16
+```
+
+---
+
+# Hybrid Network Topology
+
+```
+                    Internet
+                        │
+                  Cloudflare DNS
+                        │
+                        ▼
+             AWS Production Environment
+          (WireGuard Hub + Web Application)
+                 10.0.0.0/16
+                 /          \
+                /            \
+               /              \
+              ▼                ▼
+
+Azure Corporate        On-Premises Security Lab
+10.1.0.0/16            10.2.0.0/16
+
+Windows Server         Ubuntu WireGuard
+Windows 11             Kali Linux
+Developer VM           Security Testing
+```
+
+---
+
+# Current Project Status
+
+## Completed
+
+- AWS Virtual Private Cloud
+- Azure Virtual Network
+- On-Premises Network
+- WireGuard Hub-and-Spoke VPN
+- AWS ↔ Azure VPN Connectivity
+- AWS ↔ On-Premises VPN Connectivity
+- Linux Routing Configuration
+- IP Forwarding Configuration
+- Architecture Documentation
+- Network Diagrams
+
+---
+
+## In Progress
+
+- Azure Active Directory Infrastructure
+- Windows Server 2025
 - DNS
-- SSL/TLS
-- Reverse Proxy
-- DDoS Protection
-- Zero Trust Access
-- Security Services
+- Organizational Units
+- Users & Groups
+- Windows 11 Developer Workstation
 
 ---
 
-# WireGuard VPN
+## Planned
 
-WireGuard provides secure site-to-site communication between AWS and Azure.
-
-Features
-
-- Modern cryptography
-- Lightweight implementation
-- High performance
-- Secure encrypted tunnels
-- Hybrid cloud connectivity
-
-Current Status
-
-- AWS WireGuard Gateway Deployed ✅
-- WireGuard Installation ⏳ Pending
-- Azure VPN Configuration ⏳ Pending
-
----
-
-# Documentation
-
-| Document | Status |
-|----------|--------|
-| 01 - Project Overview | ✅ |
-| 02 - Business Requirements | ✅ |
-| 03 - Network Architecture | ✅ |
-| 04 - IP Addressing | ✅ |
-| 05 - AWS Network | ✅ |
-| 06 - Azure Network | ✅ |
-| 07 - VPN Architecture | ✅ |
-| 08 - Cloudflare | ✅ |
-| 09 - Routing | ⏳ |
-| 10 - Security | ✅ |
-| 11 - Disaster Recovery | ⏳ |
-| 12 - Cost Analysis | ⏳ |
-| 13 - Testing & Validation | ✅ |
-| 14 - Project Roadmap | ✅ |
+- React Frontend
+- FastAPI Backend
+- PostgreSQL
+- GitHub Actions CI/CD
+- CloudWatch Monitoring
+- Security Testing Pipeline
+- HTTPS
+- Production Deployment
 
 ---
 
@@ -227,136 +171,98 @@ enterprise-hybrid-cloud-platform/
 │   └── cloud-init/
 │
 ├── diagrams/
-│   ├── aws-architecture.drawio
-│   ├── azure-architecture.drawio
-│   ├── logical-network.drawio
-│   ├── vpn-architecture.drawio
-│   └── *.png
 │
 ├── documentation/
-│   ├── 01-project-overview.md
-│   ├── 02-business-requirements.md
-│   ├── 03-network-architecture.md
-│   ├── 04-ip-addressing.md
-│   ├── 05-aws-network.md
-│   ├── 06-azure-network.md
-│   ├── 07-vpn-architecture.md
-│   ├── 08-cloudflare.md
-│   ├── 09-routing.md
-│   ├── 10-security.md
-│   ├── 11-disaster-recovery.md
-│   ├── 12-cost-analysis.md
-│   ├── 13-testing-validation.md
-│   └── 14-project-roadmap.md
 │
-├── terraform/
+├── images/
 │
-├── README.md
-└── LICENSE
+├── scripts/
+│
+└── README.md
 ```
 
 ---
 
-# Current Progress
+# Technologies
 
-## Phase 1 — Planning & Design
+## Cloud
 
-- [x] Business requirements
-- [x] Logical architecture
-- [x] Network diagrams
-- [x] IP addressing
-- [x] Documentation
-
----
-
-## Phase 2 — AWS Foundation
-
-- [x] IAM Administrator
-- [x] Multi-Factor Authentication
-- [x] Production VPC
-- [x] Public Subnet
-- [x] Private Application Subnet
-- [x] Private Database Subnet
-- [x] Internet Gateway
-- [x] Public Route Table
-- [x] Security Groups
-- [x] Ubuntu WireGuard Gateway
-
----
-
-## Phase 3 — Hybrid Connectivity
-
-- [ ] Elastic IP
-- [ ] NAT Gateway
-- [ ] Install WireGuard
-- [ ] Configure AWS VPN
-- [ ] Configure Azure VPN
-- [ ] Establish Site-to-Site Tunnel
-- [ ] Routing Validation
-
----
-
-## Phase 4 — Cloud Infrastructure
-
-- [ ] Application Load Balancer
-- [ ] ECS Cluster
-- [ ] Docker Deployment
-- [ ] Amazon RDS
-- [ ] Cloudflare Integration
-
----
-
-## Phase 5 — Automation
-
-- [ ] Terraform
-- [ ] Infrastructure as Code
-- [ ] Automated Deployments
-
----
-
-# Skills Demonstrated
-
-- Enterprise Network Design
-- AWS Cloud Engineering
+- Amazon Web Services
 - Microsoft Azure
-- Hybrid Cloud Architecture
-- Linux Administration
-- Virtual Networking
-- VPN Technologies
-- Cloud Security
-- IAM
-- Infrastructure as Code
-- Docker
-- ECS
-- Terraform
-- Technical Documentation
-- Git & GitHub
+- Cloudflare
+
+## Networking
+
+- WireGuard
+- IPv4 Routing
+- Site-to-Site VPN
+- Linux Networking
+- TCP/IP
+
+## Operating Systems
+
+- Ubuntu Server
+- Windows Server 2025
+- Windows 11
+- Kali Linux
+
+## Identity
+
+- Active Directory Domain Services
+- DNS
+- Group Policy
+- AWS IAM
+
+## Development
+
+- Git
+- GitHub
+- GitHub Actions
+- Visual Studio Code
+- Python
+- React
+- FastAPI
+
+## Security
+
+- Burp Suite
+- Wireshark
+- Nmap
+- OWASP ZAP
+
+---
+
+# Documentation
+
+Detailed documentation is available in the `documentation/` directory, including:
+
+- Project Overview
+- Business Requirements
+- Network Architecture
+- IP Addressing
+- WireGuard Configuration
+- Routing
+- Security
+- Verification
+- Troubleshooting
 
 ---
 
 # Future Enhancements
 
-- AWS Systems Manager
-- CloudWatch Monitoring
-- CloudTrail Logging
-- GuardDuty
-- AWS Config
-- AWS Backup
+- Microsoft Entra ID integration
+- AWS IAM Identity Center
+- Automated Infrastructure Deployment
+- Docker Containers
+- Kubernetes
+- Prometheus
+- Grafana
+- SIEM Integration
+- Centralized Logging
 - Web Application Firewall (WAF)
-- Multi-Availability Zone Deployment
-- CI/CD Pipeline
-- Kubernetes (Future)
 
 ---
 
 # License
 
 This project is licensed under the MIT License.
-
----
-
-# Author
-
-**Eric Robinson**
-
-This project is being developed as a hands-on portfolio demonstrating enterprise networking, hybrid cloud architecture, AWS, Azure, Linux administration, infrastructure automation, and cloud security through a real-world implementation.

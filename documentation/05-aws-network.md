@@ -1,34 +1,67 @@
-# 05 - AWS Network
+# 05 - AWS Networking
 
 # Overview
 
-This document describes the Amazon Web Services (AWS) networking infrastructure used within the Enterprise Hybrid Cloud Platform. The AWS environment provides secure cloud networking, internet connectivity, and one endpoint of the WireGuard site-to-site VPN connecting AWS and Microsoft Azure.
+Amazon Web Services (AWS) hosts the production environment for the Enterprise Hybrid Cloud Platform. AWS is responsible for hosting the customer-facing web application, serving as the central WireGuard VPN hub, and providing secure connectivity between Azure and the on-premises security lab.
+
+The AWS environment is designed following enterprise networking best practices by separating public-facing infrastructure from private application and database resources.
 
 ---
 
-# Objectives
+# AWS Responsibilities
 
-- Build a secure AWS Virtual Private Cloud (VPC).
-- Create public and private subnets.
-- Configure Internet connectivity.
-- Deploy an Ubuntu WireGuard gateway.
-- Secure resources using Security Groups.
-- Integrate AWS with Azure through a WireGuard site-to-site VPN.
+The AWS environment is responsible for:
+
+- Production Web Application
+- WireGuard VPN Hub
+- Application Routing
+- Secure Internet Access
+- Cloud Storage
+- Monitoring
+- Identity & Access Management
+- Production Networking
 
 ---
 
-# AWS Architecture
+# AWS Network Architecture
 
-The AWS environment consists of:
-
-- Virtual Private Cloud (VPC)
-- Public Subnet
-- Internet Gateway
-- Route Tables
-- Security Groups
-- Elastic IP Address
-- Ubuntu Server 24.04 LTS EC2 Instance
-- WireGuard VPN Gateway
+```
+                     Internet
+                         │
+                  Cloudflare DNS
+                         │
+                         ▼
+                 Internet Gateway
+                         │
+                         ▼
+                 Public Subnet
+                 10.0.1.0/24
+                         │
+      ┌─────────────────────────────────┐
+      │                                 │
+      │ WireGuard Hub                   │
+      │ Application Load Balancer       │
+      └─────────────────────────────────┘
+                         │
+                         ▼
+              Private Application Subnet
+                    10.0.2.0/24
+                         │
+      ┌─────────────────────────────────┐
+      │                                 │
+      │ React Frontend                  │
+      │ FastAPI Backend                 │
+      └─────────────────────────────────┘
+                         │
+                         ▼
+               Private Database Subnet
+                    10.0.3.0/24
+                         │
+      ┌─────────────────────────────────┐
+      │                                 │
+      │ PostgreSQL Database             │
+      └─────────────────────────────────┘
+```
 
 ---
 
@@ -37,181 +70,318 @@ The AWS environment consists of:
 | Setting | Value |
 |----------|-------|
 | CIDR Block | 10.0.0.0/16 |
+| Region | AWS Deployment Region |
 | DNS Resolution | Enabled |
 | DNS Hostnames | Enabled |
 
+The VPC provides isolated networking for all AWS resources.
+
 ---
 
-# Subnets
+# Subnet Design
 
 ## Public Subnet
 
-| Setting | Value |
-|----------|-------|
-| CIDR Block | 10.0.1.0/24 |
-| Purpose | Internet-facing resources |
-| Auto Assign Public IP | Enabled |
+Network
 
-The WireGuard gateway resides within the public subnet and uses an Elastic IP for secure remote access and VPN connectivity.
+```
+10.0.1.0/24
+```
+
+Purpose
+
+- Internet-facing resources
+- WireGuard VPN Hub
+- Application Load Balancer
+
+---
+
+## Private Application Subnet
+
+Network
+
+```
+10.0.2.0/24
+```
+
+Purpose
+
+- React Frontend
+- FastAPI Backend
+- Internal application services
+
+This subnet is not directly accessible from the Internet.
+
+---
+
+## Private Database Subnet
+
+Network
+
+```
+10.0.3.0/24
+```
+
+Purpose
+
+- PostgreSQL Database
+
+Only application servers are permitted to communicate with database resources.
+
+---
+
+# Planned Infrastructure
+
+| Resource | Subnet | Planned IP |
+|-----------|--------|------------|
+| WireGuard Hub | Public | 10.0.1.40 |
+| Application Load Balancer | Public | Dynamic |
+| React Application | Application | Dynamic |
+| FastAPI Backend | Application | Dynamic |
+| PostgreSQL | Database | Dynamic |
 
 ---
 
 # Internet Gateway
 
-An Internet Gateway (IGW) is attached to the VPC to provide inbound and outbound Internet access.
+The Internet Gateway provides Internet connectivity for public-facing AWS resources.
 
-Route Table:
+Responsibilities
 
-| Destination | Target |
-|-------------|--------|
-| 0.0.0.0/0 | Internet Gateway |
+- Internet Access
+- Public Routing
+- Load Balancer Connectivity
+- WireGuard Endpoint Connectivity
 
 ---
 
 # Route Tables
 
-The public route table includes:
+## Public Route Table
+
+Routes
 
 | Destination | Target |
 |-------------|--------|
 | 10.0.0.0/16 | Local |
 | 0.0.0.0/0 | Internet Gateway |
 
-Additional routing for Azure private networks is handled by the WireGuard VPN.
+---
+
+## WireGuard Routes
+
+The AWS WireGuard Hub advertises:
+
+```
+10.0.0.0/16
+```
+
+Routes installed on the hub include:
+
+```
+10.1.0.0/16 dev wg0
+
+10.2.0.0/16 dev wg0
+
+172.16.100.0/24 dev wg0
+```
+
+These routes allow secure communication with Azure and the on-premises security lab.
+
+---
+
+# WireGuard Hub
+
+AWS acts as the central VPN hub.
+
+Tunnel Network
+
+```
+172.16.100.1/24
+```
+
+Connected Peers
+
+- Azure WireGuard Gateway
+- On-Premises WireGuard Gateway
+
+Responsibilities
+
+- VPN Termination
+- Traffic Routing
+- Packet Forwarding
+- Secure Tunnel Management
 
 ---
 
 # Security Groups
 
-The WireGuard gateway uses a Security Group configured with the following inbound rules.
+Security Groups implement instance-level firewall protection.
+
+Example inbound rules:
 
 | Protocol | Port | Purpose |
-|----------|------|---------|
-| SSH | 22 | Remote administration |
+|----------|------|----------|
+| SSH | 22 | Administration |
+| HTTPS | 443 | Production Application |
+| HTTP | 80 | Redirect to HTTPS |
 | UDP | 51820 | WireGuard VPN |
 
-Outbound traffic is allowed to all destinations.
+Outbound traffic is permitted as required for application and VPN communication.
 
 ---
 
-# Elastic IP
+# Identity and Access Management
 
-A static Elastic IP is associated with the EC2 instance.
+AWS IAM controls access to AWS resources.
 
-Benefits include:
+Responsibilities include:
 
-- Persistent public endpoint
-- Stable VPN endpoint
-- Reliable SSH connectivity
-- No IP changes after reboot
+- Administrative access
+- Service roles
+- Least privilege permissions
+- Secure resource authorization
 
----
-
-# EC2 Instance
-
-| Setting | Value |
-|----------|-------|
-| Operating System | Ubuntu Server 24.04 LTS |
-| Instance Role | WireGuard Gateway |
-| Placement | Public Subnet |
-
-The EC2 instance acts as the AWS VPN gateway for all encrypted communication with Azure.
+IAM manages cloud resource permissions and is separate from Active Directory user authentication hosted in Azure.
 
 ---
 
-# WireGuard VPN Integration
+# Cloud Storage
 
-The AWS gateway establishes a secure encrypted tunnel with Microsoft Azure.
+Amazon S3 will be used for:
 
-## WireGuard Interface
-
-| Setting | Value |
-|----------|-------|
-| Interface | wg0 |
-| Tunnel Address | 172.168.100.1/24 |
-| Listen Port | 51820 |
-
-## Routed Networks
-
-| Destination | Route |
-|-------------|-------|
-| Azure VNet | 10.1.0.0/16 |
-| Azure WireGuard Peer | 172.168.100.2/32 |
-
-The WireGuard configuration routes Azure network traffic through the encrypted VPN tunnel.
+- Static assets
+- Application uploads
+- Backup storage
+- Deployment artifacts
 
 ---
 
-# Network Diagram
+# Monitoring
 
-```text
-                 Internet
-                     │
-             Elastic IP Address
-                     │
-          Ubuntu WireGuard Gateway
-               10.0.1.40
-          WireGuard: 172.168.100.1
-                     │
-══════════════════════════════════════
-      Encrypted WireGuard VPN Tunnel
-══════════════════════════════════════
-                     │
-            Azure WireGuard Gateway
+CloudWatch will provide:
+
+- Metrics
+- Logs
+- Alerts
+- Performance Monitoring
+
+Future enhancements may include centralized dashboards and automated notifications.
+
+---
+
+# Production Application
+
+The production environment will host:
+
+Frontend
+
+- React
+
+Backend
+
+- FastAPI
+
+Database
+
+- PostgreSQL
+
+Application traffic flow:
+
+```
+Internet
+
+↓
+
+Cloudflare
+
+↓
+
+Application Load Balancer
+
+↓
+
+React Frontend
+
+↓
+
+FastAPI Backend
+
+↓
+
+PostgreSQL
 ```
 
 ---
 
-# Connectivity Verification
+# Network Security
 
-The AWS environment successfully communicated with:
+Security controls include:
 
-- Azure WireGuard interface
-- Azure private virtual network
-- Azure Ubuntu virtual machine
-
-Verification completed using:
-
-- WireGuard handshake
-- ICMP testing
-- Private network routing
-- End-to-end VPN validation
-
-See:
-
-```text
-documentation/09-wireguard-site-to-site-vpn.md
-```
-
----
-
-# Security Features
-
-- VPC network isolation
 - Security Groups
-- SSH authentication using key pairs
-- Elastic IP for stable VPN endpoint
-- Encrypted WireGuard tunnel
-- Public key cryptography
-- Linux IP forwarding
-
----
-
-# Skills Demonstrated
-
-- Amazon VPC
-- EC2 Administration
-- Ubuntu Linux
-- Elastic IP Management
-- Security Groups
-- Route Tables
-- Internet Gateway
 - WireGuard VPN
-- Hybrid Cloud Networking
-- Network Verification
+- Private Subnets
+- Principle of Least Privilege
+- IAM Roles
+- HTTPS
+- Cloudflare Protection
 
 ---
 
-# Outcome
+# Validation
 
-A secure AWS networking environment was successfully deployed to support a hybrid cloud architecture. The AWS EC2 instance functions as the WireGuard VPN gateway, providing encrypted connectivity to Microsoft Azure while maintaining secure access to private AWS resources over the site-to-site VPN.
+The following networking components have been validated.
+
+## Completed
+
+- AWS VPC
+- Public Subnet
+- WireGuard Hub
+- AWS ↔ Azure VPN
+- AWS ↔ On-Premises VPN
+- Linux Routing
+- IP Forwarding
+- Route Verification
+
+---
+
+# Current Status
+
+## Operational
+
+- AWS Production Network
+- WireGuard Hub
+- VPN Connectivity
+- Static Routing
+- Internet Connectivity
+
+## Planned
+
+- Application Load Balancer
+- React Frontend
+- FastAPI Backend
+- PostgreSQL
+- CloudWatch
+- S3
+- HTTPS Deployment
+
+---
+
+# Future Enhancements
+
+- Web Application Firewall (AWS WAF)
+- Auto Scaling Groups
+- Docker Containers
+- Kubernetes (EKS)
+- Infrastructure as Code (Terraform)
+- Secrets Manager
+- AWS Systems Manager
+- Multi-AZ Deployment
+
+---
+
+# Summary
+
+AWS serves as the production environment and central networking hub for the Enterprise Hybrid Cloud Platform.
+
+It hosts the customer-facing web application, terminates the WireGuard VPN connections from Azure and the on-premises security lab, manages secure routing between environments, and provides the cloud infrastructure required to support scalable application deployment, monitoring, and future enterprise growth.

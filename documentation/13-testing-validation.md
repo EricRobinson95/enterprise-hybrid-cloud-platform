@@ -2,521 +2,477 @@
 
 # Overview
 
-Testing and validation verify that the Enterprise Hybrid Cloud Platform has been configured correctly and that all deployed infrastructure functions as expected.
+This document records the testing and validation performed throughout the Enterprise Hybrid Cloud Platform project.
 
-Testing is performed after each major deployment to ensure the environment is operating properly before additional services are introduced.
-
-The project follows an incremental deployment approach:
-
-1. Deploy infrastructure.
-2. Validate functionality.
-3. Document results.
-4. Continue to the next phase.
+Testing verifies that networking, VPN connectivity, routing, cloud infrastructure, and future enterprise services operate as designed.
 
 ---
 
 # Testing Objectives
 
-- Validate AWS infrastructure deployment.
-- Verify network connectivity.
-- Confirm routing configuration.
-- Validate security controls.
-- Ensure VPN components are correctly prepared.
-- Verify resource availability before application deployment.
+- Verify hybrid cloud network connectivity
+- Validate WireGuard VPN tunnels
+- Confirm Linux routing configuration
+- Verify IP forwarding
+- Validate cloud network segmentation
+- Test application connectivity
+- Provide repeatable verification procedures
+- Document expected results
 
 ---
 
-# AWS Infrastructure Validation
+# Test Environment
 
-## Virtual Private Cloud (VPC)
-
-### Test
-
-Verify production VPC exists.
-
-### Expected Result
-
-```
-production-aws-vpc
-CIDR: 10.0.0.0/16
-```
-
-### Status
-
-✅ Passed
-
----
-
-## Public Subnet
-
-### Test
-
-Verify public subnet exists.
-
-### Expected Result
-
-```
-public-subnet
-10.0.1.0/24
-```
-
-### Status
-
-✅ Passed
-
----
-
-## Private Application Subnet
-
-### Test
-
-Verify private application subnet exists.
-
-### Expected Result
-
-```
-private-application-subnet
-10.0.2.0/24
-```
-
-### Status
-
-✅ Passed
-
----
-
-## Private Database Subnet
-
-### Test
-
-Verify private database subnet exists.
-
-### Expected Result
-
-```
-private-database-subnet
-10.0.3.0/24
-```
-
-### Status
-
-✅ Passed
-
----
-
-# Internet Gateway Validation
-
-### Test
-
-Verify Internet Gateway is attached to the production VPC.
-
-### Expected Result
-
-```
-production-internet-gateway
-Attached
-```
-
-### Status
-
-✅ Passed
-
----
-
-# Route Table Validation
-
-## Public Route Table
-
-### Test
-
-Verify public route table contains required routes.
-
-### Expected Result
-
-| Destination | Target |
-|-------------|---------|
-| 10.0.0.0/16 | Local |
-| 0.0.0.0/0 | Internet Gateway |
-
-### Status
-
-✅ Passed
-
----
-
-## Public Subnet Association
-
-### Test
-
-Verify the public subnet is associated with the public route table.
-
-### Expected Result
-
-```
-public-subnet
-↓
-
-production-public-route-table
-```
-
-### Status
-
-✅ Passed
-
----
-
-# EC2 Deployment Validation
-
-## WireGuard Gateway
-
-### Test
-
-Verify EC2 instance deployment.
-
-### Expected Result
-
-```
-production-wireguard-gateway
-Running
-```
-
-### Status
-
-✅ Passed
-
----
-
-## Instance Health
-
-### Test
-
-Verify EC2 status checks.
-
-### Expected Result
-
-```
-3 / 3 Checks Passed
-```
-
-### Status
-
-✅ Passed
-
----
-
-## Operating System
-
-### Test
-
-Verify deployed operating system.
-
-### Expected Result
-
-```
-Ubuntu Server 26.04 LTS
-```
-
-### Status
-
-✅ Passed
-
----
-
-## Instance Type
-
-### Test
-
-Verify instance sizing.
-
-### Expected Result
-
-```
-t3.micro
-```
-
-### Status
-
-✅ Passed
-
----
-
-# Network Interface Validation
-
-### Test
-
-Verify EC2 Elastic Network Interface (ENI).
-
-### Expected Result
-
-- Attached to EC2
-- Assigned private IP
-- Assigned Security Group
-- Connected to public subnet
-
-### Status
-
-✅ Passed
-
----
-
-# Security Group Validation
-
-### Test
-
-Verify production security group configuration.
-
-### Expected Result
-
-Inbound Rules
-
-| Protocol | Port | Source |
-|----------|------|--------|
-| TCP | 22 | Administrator Public IP |
-| UDP | 51820 | 0.0.0.0/0 |
-
-Outbound Rules
-
-| Protocol | Destination |
-|----------|-------------|
-| All Traffic | 0.0.0.0/0 |
-
-### Status
-
-✅ Passed
-
----
-
-# Public IP Validation
-
-### Test
-
-Verify EC2 received a public IPv4 address.
-
-### Expected Result
-
-```
-Public IPv4 Address Assigned
-```
-
-### Status
-
-✅ Passed
-
----
-
-# Private IP Validation
-
-### Test
-
-Verify EC2 received an address from the public subnet.
-
-### Expected Result
-
-```
-10.0.1.x
-```
-
-### Status
-
-✅ Passed
-
----
-
-# SSH Authentication Validation
-
-### Test
-
-Verify SSH key pair configured.
-
-### Expected Result
-
-- RSA Key Pair
-- Private key downloaded
-- Public key installed on EC2
-
-### Status
-
-✅ Passed
-
----
-
-# IAM Validation
-
-## Administrator Account
-
-### Test
-
-Verify IAM administrator account.
-
-### Expected Result
-
-- IAM user created
-- Member of Administration group
-- MFA enabled
-
-### Status
-
-✅ Passed
-
----
-
-## Root Account
-
-### Test
-
-Verify root account reserved for emergency administration.
-
-### Expected Result
-
-Daily administration performed using IAM user.
-
-### Status
-
-✅ Passed
-
----
-
-# Network Architecture Validation
-
-### Test
-
-Verify deployed AWS architecture matches project documentation.
-
-### Expected Result
-
-```
-Internet
-      │
-Internet Gateway
-      │
-Public Route Table
-      │
-Public Subnet
-      │
-WireGuard Gateway
-      │
-Future VPN Tunnel
-      │
-Azure
-```
-
-### Status
-
-✅ Passed
-
----
-
-# Resource Naming Validation
-
-### Test
-
-Verify enterprise naming convention.
-
-### Expected Result
-
-Resources include:
-
-- production-aws-vpc
-- production-public-route-table
-- production-internet-gateway
-- production-wireguard-gateway
-- production-wireguard-sg
-
-### Status
-
-✅ Passed
-
----
-
-# Security Validation
-
-### Test
-
-Confirm Principle of Least Privilege implementation.
-
-### Validation
-
-- SSH restricted to administrator IP
-- WireGuard only exposes UDP 51820
-- Separate public and private subnets
-- Root account not used for daily administration
-- MFA enabled
-
-### Status
-
-✅ Passed
-
----
-
-# Documentation Validation
-
-### Test
-
-Verify infrastructure documentation is synchronized with deployed resources.
-
-### Validation
-
-- AWS Network documentation updated
-- Network Architecture updated
-- IP Addressing updated
-- Security documentation updated
-- VPN Architecture updated
-- Cloudflare documentation updated
-- Project Roadmap updated
-- README updated
-
-### Status
-
-✅ Passed
-
----
-
-# Current Deployment Status
+## AWS Production
 
 | Component | Status |
-|-----------|--------|
-| AWS VPC | ✅ Complete |
-| Public Subnet | ✅ Complete |
-| Private Application Subnet | ✅ Complete |
-| Private Database Subnet | ✅ Complete |
-| Internet Gateway | ✅ Complete |
-| Route Tables | ✅ Complete |
-| Security Group | ✅ Complete |
-| EC2 WireGuard Gateway | ✅ Complete |
-| IAM Administrator | ✅ Complete |
-| Multi-Factor Authentication | ✅ Complete |
-| Ubuntu Server | ✅ Complete |
-| SSH Key Authentication | ✅ Complete |
-| WireGuard Installation | ⏳ Pending |
-| Azure VPN | ⏳ Pending |
-| NAT Gateway | ⏳ Pending |
-| Elastic IP | ⏳ Pending |
-| Cloudflare Integration | ⏳ Pending |
+|----------|--------|
+| VPC | ✅ |
+| EC2 | ✅ |
+| WireGuard Hub | ✅ |
+| Security Groups | ✅ |
 
 ---
 
-# Test Summary
+## Azure Corporate Environment
 
-Current infrastructure has been successfully deployed and validated.
+| Component | Status |
+|----------|--------|
+| Virtual Network | ✅ |
+| Ubuntu WireGuard Gateway | ✅ |
+| Windows Server 2025 | Planned |
+| Windows 11 Developer VM | Planned |
 
-Verified components include:
+---
 
-- Enterprise VPC
-- Network segmentation
-- Public routing
-- Internet connectivity
-- EC2 deployment
-- Security Group configuration
-- IAM administration
-- Multi-Factor Authentication
-- SSH authentication
-- Enterprise resource naming
+## On-Premises Security Lab
 
-The AWS foundation is complete and ready for the next deployment phase, which includes:
+| Component | Status |
+|----------|--------|
+| Ubuntu WireGuard Gateway | ✅ |
+| Kali Linux | Planned |
+| Security Test Workstation | Planned |
 
-1. NAT Gateway
-2. WireGuard installation
-3. Azure VPN configuration
-4. Hybrid cloud routing
-5. Cloudflare integration
-6. Application deployment
+---
+
+# Network Validation
+
+## IP Address Verification
+
+Verify interface configuration.
+
+Command
+
+```bash
+ip addr
+```
+
+Expected Result
+
+- Correct interface addresses
+- Correct subnet masks
+- Correct default gateway
+
+Status
+
+✅ Passed
+
+---
+
+## Routing Table Validation
+
+Verify Linux routing table.
+
+Command
+
+```bash
+ip route
+```
+
+Expected Result
+
+- Local subnet routes
+- WireGuard routes
+- Default gateway
+
+Status
+
+✅ Passed
+
+---
+
+## Route Lookup
+
+Verify route selection.
+
+Command
+
+```bash
+ip route get <destination-ip>
+```
+
+Example
+
+```bash
+ip route get 10.1.1.4
+```
+
+Expected Result
+
+Traffic is routed through the expected interface.
+
+Status
+
+✅ Passed
+
+---
+
+# WireGuard Validation
+
+## Tunnel Status
+
+Verify VPN status.
+
+Command
+
+```bash
+sudo wg
+```
+
+Verify
+
+- Peer status
+- Latest handshake
+- Transfer statistics
+- Allowed IPs
+
+Status
+
+✅ Passed
+
+---
+
+## WireGuard Interface
+
+Verify interface configuration.
+
+Command
+
+```bash
+ip addr show wg0
+```
+
+Expected Result
+
+- Interface active
+- Tunnel IP assigned
+
+Status
+
+✅ Passed
+
+---
+
+## IP Forwarding
+
+Verify Linux forwarding.
+
+Command
+
+```bash
+sysctl net.ipv4.ip_forward
+```
+
+Expected Result
+
+```
+net.ipv4.ip_forward = 1
+```
+
+Status
+
+✅ Passed
+
+---
+
+# Connectivity Testing
+
+## AWS → Azure
+
+Command
+
+```bash
+ping <Azure IP>
+```
+
+Status
+
+✅ Passed
+
+---
+
+## Azure → AWS
+
+Command
+
+```bash
+ping <AWS IP>
+```
+
+Status
+
+✅ Passed
+
+---
+
+## AWS → On-Premises
+
+Command
+
+```bash
+ping <On-Premises IP>
+```
+
+Status
+
+✅ Passed
+
+---
+
+## On-Premises → AWS
+
+Command
+
+```bash
+ping <AWS IP>
+```
+
+Status
+
+✅ Passed
+
+---
+
+# Traceroute Validation
+
+Verify packet path.
+
+Command
+
+```bash
+traceroute <destination-ip>
+```
+
+Expected Result
+
+Traffic follows the expected route through the WireGuard VPN.
+
+Status
+
+✅ Passed
+
+---
+
+# Packet Capture Validation
+
+Traffic was inspected using tcpdump.
+
+## Verify ICMP
+
+```bash
+sudo tcpdump -ni wg0 icmp
+```
+
+---
+
+## Verify WireGuard
+
+```bash
+sudo tcpdump -ni any udp port 51820
+```
+
+---
+
+## Verify All Traffic
+
+```bash
+sudo tcpdump -ni any
+```
+
+Expected Result
+
+- Encrypted WireGuard traffic
+- ICMP traffic
+- UDP encapsulation
+
+Status
+
+✅ Passed
+
+---
+
+# Cloud Network Validation
+
+## AWS
+
+Verified
+
+- VPC
+- Security Groups
+- Route Tables
+- WireGuard Hub
+
+Status
+
+✅ Passed
+
+---
+
+## Azure
+
+Verified
+
+- Virtual Network
+- NSG Rules
+- Ubuntu WireGuard Gateway
+
+Status
+
+✅ Passed
+
+---
+
+## On-Premises
+
+Verified
+
+- VMware Networking
+- Ubuntu WireGuard Gateway
+- Local Routing
+
+Status
+
+✅ Passed
+
+---
+
+# Current VPN Validation
+
+## Successfully Verified
+
+| Test | Status |
+|------|--------|
+| AWS ↔ Azure VPN | ✅ |
+| AWS ↔ On-Premises VPN | ✅ |
+| WireGuard Handshakes | ✅ |
+| Linux Routing | ✅ |
+| IP Forwarding | ✅ |
+| Static Routing | ✅ |
+| Packet Capture | ✅ |
+
+---
+
+# Current Limitation
+
+The hybrid cloud environment currently implements a **WireGuard hub-and-spoke topology**.
+
+The following communication paths have been validated:
+
+- AWS ↔ Azure
+- AWS ↔ On-Premises
+
+Direct Azure ↔ On-Premises transit routing has not been implemented in the current version of the project.
+
+This does not impact the intended architecture because:
+
+- Azure hosts enterprise identity and developer services.
+- AWS hosts the production web application.
+- On-Premises performs security testing against AWS-hosted resources.
+
+---
+
+# Future Testing
+
+The following validation will be completed during future project phases.
+
+## Azure
+
+- Active Directory
+- DNS
+- Group Policy
+- Domain Join
+- File Server
+- Windows 11 Developer Workstation
+
+---
+
+## AWS
+
+- React Application
+- FastAPI API
+- PostgreSQL
+- HTTPS
+- Load Balancer
+- CloudWatch
+- IAM
+
+---
+
+## Security
+
+The on-premises security lab will validate the production environment using:
+
+- Burp Suite Community
+- OWASP ZAP
+- Nmap
+- Wireshark
+- Vulnerability Assessment
+- Authentication Testing
+- Security Header Validation
+- API Testing
+
+---
+
+# Acceptance Criteria
+
+The project is considered operational when the following requirements are met.
+
+## Networking
+
+- ✅ Hybrid network deployed
+- ✅ WireGuard VPN operational
+- ✅ Static routing configured
+- ✅ Linux routing verified
+
+---
+
+## Infrastructure
+
+- Azure enterprise environment deployed
+- AWS production environment deployed
+- On-premises security lab operational
+
+---
+
+## Application
+
+- React frontend deployed
+- FastAPI backend deployed
+- PostgreSQL operational
+- HTTPS configured
+
+---
+
+## Security
+
+- Security testing completed
+- Vulnerability assessment completed
+- Production validation completed
+
+---
+
+# Summary
+
+Testing and validation confirm that the hybrid cloud networking foundation is operational.
+
+AWS functions as the central WireGuard hub, providing secure connectivity to Azure and the on-premises security lab. The current implementation establishes the networking platform required for the remaining project phases, including enterprise identity services, application deployment, CI/CD, and security testing.

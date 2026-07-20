@@ -1,203 +1,362 @@
-# 06 - Azure Network
+# 06 - Azure Networking
 
 # Overview
 
-This document describes the Microsoft Azure networking infrastructure used within the Enterprise Hybrid Cloud Platform. The Azure environment provides secure cloud networking, internet connectivity, and one endpoint of the WireGuard site-to-site VPN connecting Microsoft Azure and Amazon Web Services (AWS).
+Microsoft Azure provides the corporate IT environment for the Enterprise Hybrid Cloud Platform.
+
+The Azure environment hosts enterprise identity services, developer workstations, file services, and internal applications while maintaining secure connectivity to AWS through a WireGuard site-to-site VPN.
+
+Unlike AWS, which hosts production workloads, Azure is dedicated to corporate infrastructure and enterprise administration.
 
 ---
 
-# Objectives
+# Azure Responsibilities
 
-- Build a secure Azure Virtual Network (VNet).
-- Create public and private subnets.
-- Configure Internet connectivity.
-- Deploy an Ubuntu WireGuard gateway.
-- Secure resources using Network Security Groups (NSGs).
-- Integrate Azure with AWS through a WireGuard site-to-site VPN.
+The Azure environment is responsible for:
 
----
-
-# Azure Architecture
-
-The Azure environment consists of:
-
-- Virtual Network (VNet)
-- Public Subnet
-- Private Subnet
-- Route Tables
-- Network Security Group (NSG)
-- Static Public IP Address
-- Network Interface (NIC)
-- Ubuntu Server 24.04 LTS Virtual Machine
-- WireGuard VPN Gateway
+- Enterprise Identity
+- Active Directory Domain Services
+- DNS
+- Group Policy
+- Windows File Services
+- Internal Applications
+- Developer Workstations
+- Secure Connectivity to AWS
 
 ---
 
-# Virtual Network (VNet)
+# Azure Network Architecture
+
+```
+                   Azure Virtual Network
+                      10.1.0.0/16
+                            │
+        ┌───────────────────┼────────────────────┐
+        │                   │                    │
+        ▼                   ▼                    ▼
+
+ Public Subnet      Identity Services      Developer Subnet
+ 10.1.1.0/24          10.1.2.0/24           10.1.3.0/24
+
+ Ubuntu WG          Windows Server        Windows 11
+ Gateway            Active Directory      Developer VM
+                    DNS
+
+                            │
+                            ▼
+
+                Infrastructure Services
+                     10.1.4.0/24
+
+              Windows File Server
+              Internal Application Server
+```
+
+---
+
+# Azure Virtual Network (VNet)
 
 | Setting | Value |
 |----------|-------|
 | Address Space | 10.1.0.0/16 |
+| DNS | Active Directory DNS |
+| Region | Azure Deployment Region |
+
+The Virtual Network provides secure communication between all Azure resources.
 
 ---
 
-# Subnets
+# Subnet Design
 
 ## Public Subnet
 
-| Setting | Value |
-|----------|-------|
-| CIDR Block | 10.1.1.0/24 |
-| Purpose | Internet-facing resources |
+Network
 
-The WireGuard gateway resides within the public subnet and uses a Static Public IP for secure remote administration and VPN connectivity.
+```
+10.1.1.0/24
+```
+
+Purpose
+
+- Ubuntu WireGuard Gateway
+
+This subnet provides secure connectivity between Azure and AWS.
 
 ---
 
-# Network Security Group (NSG)
+## Identity Services Subnet
 
-The Network Security Group protects the virtual machine by allowing only required inbound traffic.
+Network
+
+```
+10.1.2.0/24
+```
+
+Purpose
+
+- Windows Server 2025
+- Active Directory Domain Services
+- DNS
+
+This subnet hosts the organization's enterprise identity infrastructure.
+
+---
+
+## Developer Subnet
+
+Network
+
+```
+10.1.3.0/24
+```
+
+Purpose
+
+- Windows 11 Developer Workstation
+
+The workstation is joined to the Active Directory domain and provides a standardized development environment.
+
+---
+
+## Infrastructure Services Subnet
+
+Network
+
+```
+10.1.4.0/24
+```
+
+Purpose
+
+- Windows File Server
+- Internal Application Server
+
+This subnet hosts internal business services used by employees.
+
+---
+
+# Planned Infrastructure
+
+| Resource | Subnet | Planned IP |
+|-----------|--------|------------|
+| Ubuntu WireGuard Gateway | Public | 10.1.1.4 |
+| Windows Server 2025 | Identity | 10.1.2.10 |
+| Windows 11 Developer VM | Developer | 10.1.3.10 |
+| Windows File Server | Infrastructure | 10.1.4.10 |
+| Internal Application Server | Infrastructure | 10.1.4.20 |
+
+---
+
+# Network Security Groups (NSGs)
+
+Each subnet is protected using Azure Network Security Groups.
+
+Example rules include:
 
 | Protocol | Port | Purpose |
-|----------|------|---------|
-| SSH | 22 | Remote administration |
-| UDP | 51820 | WireGuard VPN |
+|----------|------|----------|
+| RDP | 3389 | Windows Administration |
+| SSH | 22 | Ubuntu Administration |
+| DNS | 53 | Active Directory DNS |
+| WireGuard | UDP 51820 | VPN Connectivity |
 
-Outbound traffic is allowed to all destinations.
-
----
-
-# Static Public IP
-
-The Azure Virtual Machine uses a Standard Static Public IP.
-
-Benefits include:
-
-- Permanent VPN endpoint
-- Reliable SSH access
-- Consistent WireGuard peer configuration
-- No public IP changes after VM restart
+Additional rules will be implemented following the principle of least privilege.
 
 ---
 
-# Network Interface (NIC)
+# WireGuard Gateway
 
-The Azure VM uses a dedicated Network Interface Card (NIC) connected to the public subnet.
+Azure connects to AWS through an Ubuntu-based WireGuard gateway.
 
-The NIC provides:
+Tunnel Network
 
-- Private VNet connectivity
-- Public Internet access
-- WireGuard VPN endpoint
-- NSG association
+```
+172.16.100.2/24
+```
 
----
+Peer
 
-# Azure Virtual Machine
+```
+AWS WireGuard Hub
+172.16.100.1
+```
 
-| Setting | Value |
-|----------|-------|
-| Operating System | Ubuntu Server 24.04 LTS |
-| Role | WireGuard Gateway |
-| Placement | Public Subnet |
+Advertised Network
 
-The Azure VM functions as the Azure VPN gateway for secure communication with AWS.
+```
+10.1.0.0/16
+```
 
----
+Responsibilities
 
-# WireGuard VPN Integration
-
-The Azure gateway establishes a secure encrypted tunnel with AWS.
-
-## WireGuard Interface
-
-| Setting | Value |
-|----------|-------|
-| Interface | wg0 |
-| Tunnel Address | 172.168.100.2/24 |
-| Listen Port | 51820 |
-
-## Routed Networks
-
-| Destination | Route |
-|-------------|-------|
-| AWS VPC | 10.0.0.0/16 |
-| AWS WireGuard Peer | 172.168.100.1/32 |
-
-The WireGuard configuration routes AWS network traffic through the encrypted VPN tunnel.
+- VPN Connectivity
+- Secure Routing
+- Packet Forwarding
+- Encrypted Communication
 
 ---
 
-# Network Diagram
+# Active Directory Services
 
-```text
-             Internet
-                 │
-        Azure Static Public IP
-                 │
-     Ubuntu WireGuard Gateway
-            10.1.1.4
-      WireGuard: 172.168.100.2
-                 │
-══════════════════════════════════════
-     Encrypted WireGuard VPN Tunnel
-══════════════════════════════════════
-                 │
-        AWS WireGuard Gateway
+Windows Server 2025 will provide:
+
+- Active Directory Domain Services
+- DNS
+- Organizational Units
+- Security Groups
+- User Authentication
+- Group Policy
+
+Example users:
+
+```
+Eric.Admin
+
+John.Developer
 ```
 
 ---
 
-# Connectivity Verification
+# Developer Environment
 
-The Azure environment successfully communicated with:
+The Windows 11 Developer Workstation will provide a managed enterprise development environment.
 
-- AWS WireGuard interface
-- AWS private virtual network
-- AWS Ubuntu EC2 instance
+Installed software will include:
 
-Verification completed using:
+- Visual Studio Code
+- Git
+- GitHub Desktop (Optional)
+- Python
+- Node.js
+- Docker Desktop
+- AWS CLI
+- Azure CLI
 
-- WireGuard handshake
-- ICMP testing
-- Private network routing
-- End-to-end VPN validation
+Developers will connect remotely using Remote Desktop Protocol (RDP).
 
-See:
+---
 
-```text
-documentation/09-wireguard-site-to-site-vpn.md
+# File Services
+
+Windows File Server will provide:
+
+- Shared Project Files
+- Department Shares
+- Backup Storage
+- NTFS Permissions
+
+Access will be controlled through Active Directory security groups.
+
+---
+
+# Internal Application Server
+
+The Internal Application Server may host:
+
+- Internal Documentation
+- Package Repository
+- Development Utilities
+- Administrative Tools
+
+This server is intended for internal corporate services only.
+
+---
+
+# Routing
+
+Azure advertises:
+
+```
+10.1.0.0/16
+```
+
+Traffic destined for AWS traverses the WireGuard tunnel.
+
+Example routes
+
+```
+10.0.0.0/16 dev wg0
+
+172.16.100.0/24 dev wg0
 ```
 
 ---
 
-# Security Features
+# Identity Architecture
 
-- Azure Virtual Network isolation
-- Network Security Groups
-- SSH authentication using key pairs
-- Static Public IP
-- Encrypted WireGuard tunnel
-- Public key cryptography
-- Linux IP forwarding
+Azure provides centralized identity management.
+
+Responsibilities include:
+
+- User Authentication
+- Computer Authentication
+- Group Policy
+- DNS
+- Enterprise Administration
+
+AWS IAM remains responsible for authorizing access to AWS resources and is separate from Active Directory.
 
 ---
 
-# Skills Demonstrated
+# Validation
 
-- Microsoft Azure
+The following components have been validated.
+
+## Completed
+
 - Azure Virtual Network
-- Azure Virtual Machine
-- Network Security Groups
-- Static Public IP
-- Ubuntu Linux
-- WireGuard VPN
-- Hybrid Cloud Networking
-- Network Routing
-- Infrastructure Security
+- Ubuntu WireGuard Gateway
+- AWS VPN Connectivity
+- Static Routing
+- Linux IP Forwarding
 
 ---
 
-# Outcome
+## Planned
 
-A secure Azure networking environment was successfully deployed to support a hybrid cloud architecture. The Azure Virtual Machine functions as the WireGuard VPN gateway, providing encrypted connectivity to AWS while maintaining secure access to private Azure resources over the site-to-site VPN.
+- Windows Server 2025
+- Active Directory
+- DNS
+- Group Policy
+- Windows File Server
+- Windows 11 Developer Workstation
+- Domain Join
+- Remote Desktop
+
+---
+
+# Current Status
+
+## Operational
+
+- Azure Networking
+- WireGuard VPN
+- AWS Connectivity
+- Static Routing
+
+## In Progress
+
+- Enterprise Identity Infrastructure
+
+---
+
+# Future Enhancements
+
+Future improvements may include:
+
+- Microsoft Entra ID
+- Azure Bastion
+- Azure Backup
+- Azure Monitor
+- Azure Update Manager
+- Azure Key Vault
+- Azure Automation
+- Azure Site Recovery
+
+---
+
+# Summary
+
+The Azure environment serves as the corporate IT platform for the Enterprise Hybrid Cloud Platform.
+
+It provides enterprise identity services, developer workstations, file services, and internal infrastructure while maintaining secure connectivity to AWS through a WireGuard site-to-site VPN. Azure supports employee authentication, software development, and corporate administration, complementing the production workloads hosted in AWS.
