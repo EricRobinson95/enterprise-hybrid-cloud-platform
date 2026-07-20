@@ -1,6 +1,6 @@
 <mxfile host="Electron">
   <diagram name="Page-1" id="2XKusGkC_Uru7LLcT-Ei">
-    <mxGraphModel dx="1312" dy="650" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1325" dy="657" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -25,10 +25,10 @@
         <mxCell id="EOUbcXdezM008GbUI7hu-9" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;" value="Public Subnet&lt;div&gt;10.2.1.0/24&lt;/div&gt;" vertex="1">
           <mxGeometry height="30" width="90" x="280" y="112" as="geometry" />
         </mxCell>
-        <mxCell id="EOUbcXdezM008GbUI7hu-10" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;" value="Private Identity Subnet&lt;div&gt;10.2.2&lt;span style=&quot;color: rgba(0, 0, 0, 0); font-family: monospace; font-size: 0px; white-space: nowrap; background-color: transparent;&quot;&gt;%3CmxGraphModel%3E%3Croot%3E%3CmxCell%20id%3D%220%22%2F%3E%3CmxCell%20id%3D%221%22%20parent%3D%220%22%2F%3E%3CmxCell%20id%3D%222%22%20parent%3D%221%22%20style%3D%22text%3Bhtml%3D1%3BwhiteSpace%3Dwrap%3BstrokeColor%3Dnone%3BfillColor%3Dnone%3Balign%3Dleft%3BverticalAlign%3Dmiddle%3Brounded%3D0%3B%22%20value%3D%22Public%20Subnet%26lt%3Bdiv%26gt%3B10.2.1.0%2F24%26lt%3B%2Fdiv%26gt%3B%22%20vertex%3D%221%22%3E%3CmxGeometry%20height%3D%2230%22%20width%3D%2290%22%20x%3D%22280%22%20y%3D%22110%22%20as%3D%22geometry%22%2F%3E%3C%2FmxCell%3E%3C%2Froot%3E%3C%2FmxGraphModel%3E&lt;/span&gt;&lt;span style=&quot;color: rgba(0, 0, 0, 0); font-family: monospace; font-size: 0px; white-space: nowrap; background-color: transparent;&quot;&gt;%3CmxGraphModel%3E%3Croot%3E%3CmxCell%20id%3D%220%22%2F%3E%3CmxCell%20id%3D%221%22%20parent%3D%220%22%2F%3E%3CmxCell%20id%3D%222%22%20parent%3D%221%22%20style%3D%22text%3Bhtml%3D1%3BwhiteSpace%3Dwrap%3BstrokeColor%3Dnone%3BfillColor%3Dnone%3Balign%3Dleft%3BverticalAlign%3Dmiddle%3Brounded%3D0%3B%22%20value%3D%22Public%20Subnet%26lt%3Bdiv%26gt%3B10.2.1.0%2F24%26lt%3B%2Fdiv%26gt%3B%22%20vertex%3D%221%22%3E%3CmxGeometry%20height%3D%2230%22%20width%3D%2290%22%20x%3D%22280%22%20y%3D%22110%22%20as%3D%22geometry%22%2F%3E%3C%2FmxCell%3E%3C%2Froot%3E%3C%2FmxGraphModel%3E&lt;/span&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;.0/24&lt;/span&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="30" width="133" x="280" y="322" as="geometry" />
+        <mxCell id="EOUbcXdezM008GbUI7hu-10" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;" value="Private Security Operations Subnet&lt;div&gt;10.2.2&lt;span style=&quot;color: rgba(0, 0, 0, 0); font-family: monospace; font-size: 0px; white-space: nowrap; background-color: transparent;&quot;&gt;%3CmxGraphModel%3E%3Croot%3E%3CmxCell%20id%3D%220%22%2F%3E%3CmxCell%20id%3D%221%22%20parent%3D%220%22%2F%3E%3CmxCell%20id%3D%222%22%20parent%3D%221%22%20style%3D%22text%3Bhtml%3D1%3BwhiteSpace%3Dwrap%3BstrokeColor%3Dnone%3BfillColor%3Dnone%3Balign%3Dleft%3BverticalAlign%3Dmiddle%3Brounded%3D0%3B%22%20value%3D%22Public%20Subnet%26lt%3Bdiv%26gt%3B10.2.1.0%2F24%26lt%3B%2Fdiv%26gt%3B%22%20vertex%3D%221%22%3E%3CmxGeometry%20height%3D%2230%22%20width%3D%2290%22%20x%3D%22280%22%20y%3D%22110%22%20as%3D%22geometry%22%2F%3E%3C%2FmxCell%3E%3C%2Froot%3E%3C%2FmxGraphModel%3E&lt;/span&gt;&lt;span style=&quot;color: rgba(0, 0, 0, 0); font-family: monospace; font-size: 0px; white-space: nowrap; background-color: transparent;&quot;&gt;%3CmxGraphModel%3E%3Croot%3E%3CmxCell%20id%3D%220%22%2F%3E%3CmxCell%20id%3D%221%22%20parent%3D%220%22%2F%3E%3CmxCell%20id%3D%222%22%20parent%3D%221%22%20style%3D%22text%3Bhtml%3D1%3BwhiteSpace%3Dwrap%3BstrokeColor%3Dnone%3BfillColor%3Dnone%3Balign%3Dleft%3BverticalAlign%3Dmiddle%3Brounded%3D0%3B%22%20value%3D%22Public%20Subnet%26lt%3Bdiv%26gt%3B10.2.1.0%2F24%26lt%3B%2Fdiv%26gt%3B%22%20vertex%3D%221%22%3E%3CmxGeometry%20height%3D%2230%22%20width%3D%2290%22%20x%3D%22280%22%20y%3D%22110%22%20as%3D%22geometry%22%2F%3E%3C%2FmxCell%3E%3C%2Froot%3E%3C%2FmxGraphModel%3E&lt;/span&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;.0/24&lt;/span&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="30" width="202" x="280" y="322" as="geometry" />
         </mxCell>
-        <mxCell id="EOUbcXdezM008GbUI7hu-12" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;" value="Private Client Subnet&lt;div&gt;10.2.3.0/24&lt;/div&gt;" vertex="1">
+        <mxCell id="EOUbcXdezM008GbUI7hu-12" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;" value="Private Test Subnet&lt;div&gt;10.2.3.0/24&lt;/div&gt;" vertex="1">
           <mxGeometry height="30" width="123" x="280" y="520" as="geometry" />
         </mxCell>
         <mxCell id="EOUbcXdezM008GbUI7hu-14" parent="1" style="whiteSpace=wrap;html=1;fillColor=none;" value="" vertex="1">
@@ -37,26 +37,11 @@
         <mxCell id="EOUbcXdezM008GbUI7hu-15" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;" value="Ubuntu VM&lt;div&gt;WireGuard VPN Gateway&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;div&gt;eth0: 10.2.1.12&lt;br&gt;&lt;div&gt;wg0: 172.16.100.3&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;" vertex="1">
           <mxGeometry height="30" width="162" x="370" y="156" as="geometry" />
         </mxCell>
-        <mxCell id="EOUbcXdezM008GbUI7hu-22" parent="1" style="image;html=1;image=img/lib/clip_art/computers/Laptop_128x128.png" value="Windows Client 11" vertex="1">
-          <mxGeometry height="80" width="80" x="400" y="530" as="geometry" />
+        <mxCell id="EOUbcXdezM008GbUI7hu-22" parent="1" style="image;html=1;image=img/lib/clip_art/computers/Laptop_128x128.png" value="Kali Linux" vertex="1">
+          <mxGeometry height="80" width="80" x="387" y="335" as="geometry" />
         </mxCell>
-        <mxCell id="EOUbcXdezM008GbUI7hu-23" connectable="0" parent="1" style="group" value="" vertex="1">
-          <mxGeometry height="64.98" width="180" x="360" y="340" as="geometry" />
-        </mxCell>
-        <mxCell id="EOUbcXdezM008GbUI7hu-17" edge="1" parent="EOUbcXdezM008GbUI7hu-23" source="EOUbcXdezM008GbUI7hu-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;" target="EOUbcXdezM008GbUI7hu-21" value="">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="EOUbcXdezM008GbUI7hu-18" parent="EOUbcXdezM008GbUI7hu-23" style="image;aspect=fixed;perimeter=ellipsePerimeter;html=1;align=center;shadow=0;dashed=0;spacingTop=3;image=img/lib/active_directory/windows_server_2.svg;" value="Windows Server 2025" vertex="1">
-          <mxGeometry height="64.97999999999999" width="51.996234408096015" as="geometry" />
-        </mxCell>
-        <mxCell id="EOUbcXdezM008GbUI7hu-19" edge="1" parent="EOUbcXdezM008GbUI7hu-23" source="EOUbcXdezM008GbUI7hu-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="EOUbcXdezM008GbUI7hu-18" value="">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="EOUbcXdezM008GbUI7hu-20" parent="EOUbcXdezM008GbUI7hu-23" style="fillColor=#28A8E0;verticalLabelPosition=bottom;sketch=0;html=1;strokeColor=#ffffff;verticalAlign=top;align=center;points=[[0.145,0.145,0],[0.5,0,0],[0.855,0.145,0],[1,0.5,0],[0.855,0.855,0],[0.5,1,0],[0.145,0.855,0],[0,0.5,0]];pointerEvents=1;shape=mxgraph.cisco_safe.compositeIcon;bgIcon=ellipse;resIcon=mxgraph.cisco_safe.capability.dns;" value="DNS" vertex="1">
-          <mxGeometry height="27.59" width="28.9" x="147.25" y="-10" as="geometry" />
-        </mxCell>
-        <mxCell id="EOUbcXdezM008GbUI7hu-21" parent="EOUbcXdezM008GbUI7hu-23" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=12;image=img/lib/azure2/identity/Azure_Active_Directory.svg;" value="AD Domain Services" vertex="1">
-          <mxGeometry height="25.998117204048008" width="28.437352318192506" x="147.24630590077305" y="38.98188279595195" as="geometry" />
+        <mxCell id="IULsNOZUB1_Y1RCRdrQc-1" parent="1" style="image;html=1;image=img/lib/clip_art/computers/Laptop_128x128.png" value="Test AWS Production" vertex="1">
+          <mxGeometry height="80" width="80" x="411" y="527" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

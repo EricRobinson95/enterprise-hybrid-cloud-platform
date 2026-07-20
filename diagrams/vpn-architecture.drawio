@@ -1,6 +1,6 @@
 <mxfile host="Electron">
   <diagram name="Page-1" id="QNb99Z5VNnpAwm8Hrf0m">
-    <mxGraphModel dx="1910" dy="1148" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1960" dy="1173" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -65,10 +65,10 @@
         <mxCell id="WFm0XklsdcSGEl18TI9q-22" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;div&gt;Public Subnet&lt;/div&gt;&lt;div&gt;10.0.1.0/24&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Application Subnet&lt;/div&gt;&lt;div&gt;10.0.2.0/24&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Database Subnet&lt;/div&gt;&lt;div&gt;10.0.3.0/24&lt;/div&gt;" vertex="1">
           <mxGeometry height="200" width="120" x="470" y="80" as="geometry" />
         </mxCell>
-        <mxCell id="WFm0XklsdcSGEl18TI9q-24" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;div&gt;Public Subnet&lt;/div&gt;&lt;div&gt;10.1.1.0/24&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Identity Subnet&lt;/div&gt;&lt;div&gt;10.1.2.0/24&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Management Subnet&lt;/div&gt;&lt;div&gt;10.1.3.0/24&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Infrastructure Subnet&lt;/div&gt;&lt;div&gt;10.1.4.0/24&lt;/div&gt;" vertex="1">
+        <mxCell id="WFm0XklsdcSGEl18TI9q-24" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;div&gt;Public Subnet&lt;/div&gt;&lt;div&gt;10.1.1.0/24&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Identity Subnet&lt;/div&gt;&lt;div&gt;10.1.2.0/24&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Client Subnet&lt;/div&gt;&lt;div&gt;10.1.3.0/24&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Infrastructure Subnet&lt;/div&gt;&lt;div&gt;10.1.4.0/24&lt;/div&gt;" vertex="1">
           <mxGeometry height="200" width="120" x="80" y="520" as="geometry" />
         </mxCell>
-        <mxCell id="WFm0XklsdcSGEl18TI9q-25" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;div&gt;Public Subnet&lt;/div&gt;&lt;div&gt;10.2.1.0/24&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Identity Subnet&lt;/div&gt;&lt;div&gt;10.2.2.0/24&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Clients Subnet&lt;/div&gt;&lt;div&gt;10.2.3.0/24&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+        <mxCell id="WFm0XklsdcSGEl18TI9q-25" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;div&gt;Public Subnet&lt;/div&gt;&lt;div&gt;10.2.1.0/24&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Security Subnet&lt;/div&gt;&lt;div&gt;10.2.2.0/24&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Test Subnet&lt;/div&gt;&lt;div&gt;10.2.3.0/24&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
           <mxGeometry height="200" width="120" x="910" y="510" as="geometry" />
         </mxCell>
         <mxCell id="W7WGApFkLfXgs7XQu4tl-2" parent="1" style="whiteSpace=wrap;html=1;fillColor=none;dashed=1;dashPattern=1 4;" value="" vertex="1">
