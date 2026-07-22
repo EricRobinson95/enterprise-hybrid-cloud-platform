@@ -1,273 +1,243 @@
-# 04 - IP Addressing
+# IP Addressing Plan
 
-# Overview
+## Overview
 
-This document defines the IP addressing scheme used throughout the Enterprise Hybrid Cloud Platform.
+This document defines the enterprise IP addressing scheme used throughout the hybrid cloud platform. The environment consists of three independent private networks connected through an encrypted WireGuard hub-and-spoke VPN.
 
-The environment uses private RFC 1918 IPv4 address space and is segmented across Amazon Web Services (AWS), Microsoft Azure, and an on-premises security lab. Each environment has its own dedicated network to simplify routing, improve security, and support future scalability.
-
----
-
-# IP Addressing Objectives
-
-- Provide unique address space for each environment
-- Eliminate overlapping networks
-- Simplify static routing
-- Support WireGuard site-to-site VPN connectivity
-- Separate production, corporate, and security environments
-- Allow future expansion
+| Environment | Network |
+|------------|------------|
+| AWS Cloud | 10.0.0.0/16 |
+| Azure Cloud | 10.1.0.0/16 |
+| On-Premises VMware | 10.2.0.0/16 |
+| WireGuard Tunnel | 172.16.100.0/24 |
 
 ---
 
-# Enterprise Address Space
+# Global Network Allocation
 
-| Environment | Network | Purpose |
-|------------|----------|----------|
-| AWS | 10.0.0.0/16 | Production Environment |
-| Azure | 10.1.0.0/16 | Corporate IT |
-| On-Premises | 10.2.0.0/16 | Security Operations |
-| WireGuard Tunnel | 172.16.100.0/24 | VPN Transit Network |
+| Network | Purpose |
+|----------|---------|
+| 10.0.0.0/16 | AWS Cloud |
+| 10.1.0.0/16 | Azure Cloud |
+| 10.2.0.0/16 | On-Premises Lab |
+| 172.16.100.0/24 | WireGuard Tunnel Network |
 
 ---
 
-# AWS Production Environment
+# AWS Cloud
 
-Network
+## VPC
 
 ```
 10.0.0.0/16
 ```
 
-## Subnets
-
-| Subnet | Network | Purpose |
-|---------|----------|----------|
-| Public Subnet | 10.0.1.0/24 | Load Balancer, WireGuard Gateway |
-| Application Subnet | 10.0.2.0/24 | React & FastAPI |
-| Database Subnet | 10.0.3.0/24 | PostgreSQL |
+| Subnet | CIDR | Purpose |
+|---------|------|----------|
+| Public | 10.0.1.0/24 | Internet-facing resources |
+| Application | 10.0.2.0/24 | ECS Cluster |
+| Database | 10.0.3.0/24 | Amazon RDS PostgreSQL |
 
 ---
 
-## Planned Resources
+## AWS Hosts
 
-| Resource | Private IP |
-|-----------|------------|
-| WireGuard Hub | 10.0.1.40 |
-| Application Load Balancer | Dynamic |
-| React Application | Dynamic |
-| FastAPI Server | Dynamic |
-| PostgreSQL Database | Dynamic |
+| Device | Interface | Address |
+|---------|-----------|---------|
+| Internet Gateway | N/A | AWS Managed |
+| Application Load Balancer | Public | Dynamic |
+| WireGuard Gateway | eth0 | 10.0.1.40 |
+| WireGuard Gateway | wg0 | 172.16.100.1 |
 
 ---
 
-# Azure Corporate Environment
+# Azure Cloud
 
-Network
+## Virtual Network
 
 ```
 10.1.0.0/16
 ```
 
-## Subnets
-
-| Subnet | Network | Purpose |
-|---------|----------|----------|
-| Public Subnet | 10.1.1.0/24 | WireGuard Gateway |
-| Identity Services Subnet | 10.1.2.0/24 | Active Directory & DNS |
-| Developer Subnet | 10.1.3.0/24 | Windows 11 Developer Workstation |
-| Infrastructure Services Subnet | 10.1.4.0/24 | File Server & Internal Applications |
+| Subnet | CIDR | Purpose |
+|---------|------|----------|
+| Public | 10.1.1.0/24 | VPN Gateway |
+| Identity Services | 10.1.2.0/24 | Active Directory |
+| Client | 10.1.3.0/24 | Windows 11 Workstations |
+| Infrastructure Services | 10.1.4.0/24 | File Server & Internal Applications |
 
 ---
 
-## Planned Resources
+## Azure Hosts
 
-| Resource | Private IP |
-|-----------|------------|
-| Ubuntu WireGuard Gateway | 10.1.1.4 |
-| Windows Server 2025 | 10.1.2.10 |
-| Windows File Server | 10.1.4.10 |
-| Internal Application Server | 10.1.4.20 |
-| Windows 11 Developer Workstation | 10.1.3.10 |
+| Device | Interface | Address |
+|---------|-----------|---------|
+| Ubuntu WireGuard Gateway | eth0 | 10.1.1.4 |
+| Ubuntu WireGuard Gateway | wg0 | 172.16.100.2 |
+| Windows Server 2025 | Ethernet | 10.1.2.x *(Static)* |
+| Windows 11 Client *(Planned)* | Ethernet | 10.1.3.x |
+| File Server *(Planned)* | Ethernet | 10.1.4.x |
+| Internal Application Server *(Planned)* | Ethernet | 10.1.4.x |
 
 ---
 
-# On-Premises Security Lab
+# On-Premises Network
 
-Network
+## VMware VMnet8 Network
 
 ```
 10.2.0.0/16
 ```
 
-## Subnets
-
-| Subnet | Network | Purpose |
-|---------|----------|----------|
-| Public Subnet | 10.2.1.0/24 | WireGuard Gateway |
-| Security Operations Subnet | 10.2.2.0/24 | Kali Linux |
-| Security Testing Subnet | 10.2.3.0/24 | Security Test Workstation |
+| Subnet | CIDR | Purpose |
+|---------|------|----------|
+| Public | 10.2.1.0/24 | WireGuard Gateway |
+| Security Operations | 10.2.2.0/24 | Kali Linux |
+| Test Lab | 10.2.3.0/24 | Windows Test Machines |
 
 ---
 
-## Planned Resources
+## On-Premises Hosts
 
-| Resource | Private IP |
-|-----------|------------|
-| Ubuntu WireGuard Gateway | 10.2.1.12 |
-| Kali Linux | 10.2.2.10 |
-| Security Test Workstation | 10.2.3.10 |
+| Device | Interface | Address |
+|---------|-----------|---------|
+| Ubuntu WireGuard Gateway | ens33 | 10.2.1.12 |
+| Ubuntu WireGuard Gateway | wg0 | 172.16.100.3 |
+| Kali Linux | ens33 | 10.2.2.x |
+| Windows 11 Test Workstation *(Planned)* | Ethernet | 10.2.3.x |
 
 ---
 
 # WireGuard Tunnel Network
 
-Network
-
 ```
 172.16.100.0/24
 ```
 
-## Tunnel Addresses
-
-| Device | Tunnel IP |
+| Gateway | Tunnel IP |
 |----------|-----------|
-| AWS WireGuard Hub | 172.16.100.1 |
-| Azure WireGuard Gateway | 172.16.100.2 |
-| On-Premises WireGuard Gateway | 172.16.100.3 |
-
----
-
-# Network Summary
-
-```
-AWS Production
-10.0.0.0/16
-
-├── 10.0.1.0/24 Public
-├── 10.0.2.0/24 Application
-└── 10.0.3.0/24 Database
-
-
-Azure Corporate
-10.1.0.0/16
-
-├── 10.1.1.0/24 Public
-├── 10.1.2.0/24 Identity Services
-├── 10.1.3.0/24 Developer
-└── 10.1.4.0/24 Infrastructure
-
-
-On-Premises Security Lab
-10.2.0.0/16
-
-├── 10.2.1.0/24 Public
-├── 10.2.2.0/24 Security Operations
-└── 10.2.3.0/24 Security Testing
-```
-
----
-
-# VPN Transit Network
-
-```
-172.16.100.0/24
-
-AWS Hub
-172.16.100.1
-
-Azure Gateway
-172.16.100.2
-
-On-Premises Gateway
-172.16.100.3
-```
-
----
-
-# Addressing Strategy
-
-The addressing plan follows a simple hierarchical structure.
-
-```
-10.0.x.x
-
-AWS Production
-```
-
-```
-10.1.x.x
-
-Azure Corporate
-```
-
-```
-10.2.x.x
-
-On-Premises Security
-```
-
-This structure makes the environment easy to understand and simplifies troubleshooting.
+| AWS Hub | 172.16.100.1 |
+| Azure Spoke | 172.16.100.2 |
+| On-Premises Spoke | 172.16.100.3 |
 
 ---
 
 # Routing Summary
 
-| Source | Destination | Route |
-|----------|-------------|-------|
-| AWS | Azure | WireGuard |
-| AWS | On-Premises | WireGuard |
-| Azure | AWS | WireGuard |
-| On-Premises | AWS | WireGuard |
+## AWS Hub
 
-Current implementation uses AWS as the central routing hub.
+Routes
 
----
-
-# Reserved Address Space
-
-The following address ranges remain available for future expansion.
-
-| Network | Purpose |
-|----------|----------|
-| 10.0.4.0/24 - 10.0.255.0/24 | Additional AWS Services |
-| 10.1.5.0/24 - 10.1.255.0/24 | Additional Azure Services |
-| 10.2.4.0/24 - 10.2.255.0/24 | Additional On-Premises Networks |
+```
+10.1.0.0/16
+10.2.0.0/16
+```
 
 ---
 
-# Future Expansion
+## Azure Spoke
 
-Future infrastructure may include:
+Routes
 
-## AWS
-
-- Bastion Host
-- Container Services
-- Kubernetes Cluster
-- Monitoring Servers
+```
+10.0.0.0/16
+10.2.0.0/16
+```
 
 ---
 
-## Azure
+## On-Premises Spoke
 
-- Microsoft Entra ID Integration
-- Azure Bastion
-- Backup Services
-- Update Management
+Routes
 
----
-
-## On-Premises
-
-- SIEM
-- Logging Server
-- Vulnerability Scanner
-- Additional Security Workstations
+```
+10.0.0.0/16
+10.1.0.0/16
+```
 
 ---
 
-# Summary
+# Default Gateways
 
-The Enterprise Hybrid Cloud Platform uses a structured private IPv4 addressing scheme that separates production, corporate IT, and security operations into dedicated networks.
+| Environment | Default Gateway |
+|-------------|----------------|
+| AWS | 10.0.1.1 |
+| Azure | 10.1.1.1 |
+| On-Premises | 10.2.1.1 |
 
-The addressing plan supports secure WireGuard site-to-site VPN connectivity, simplifies routing, avoids overlapping address space, and provides sufficient capacity for future growth while maintaining a clear and scalable enterprise network design.
+---
+
+# DNS Configuration
+
+| Environment | DNS Server |
+|-------------|------------|
+| AWS | AWS VPC Resolver |
+| Azure | Windows Server 2025 (Active Directory DNS) |
+| On-Premises | Windows Server 2025 DNS (via WireGuard) *(planned)* |
+
+---
+
+# VPN Address Advertisement
+
+## AWS Hub
+
+Advertises
+
+```
+10.1.0.0/16
+10.2.0.0/16
+```
+
+---
+
+## Azure Spoke
+
+Advertises
+
+```
+10.0.0.0/16
+10.2.0.0/16
+172.16.100.1/32
+172.16.100.3/32
+```
+
+---
+
+## On-Premises Spoke
+
+Advertises
+
+```
+10.0.0.0/16
+10.1.0.0/16
+172.16.100.1/32
+172.16.100.2/32
+```
+
+---
+
+# Addressing Standards
+
+- Every cloud environment uses a unique /16 private network.
+- Every subnet uses a /24 CIDR block.
+- WireGuard gateways use static IP addresses.
+- Windows infrastructure servers use static IP addresses.
+- Client workstations use reserved static addresses or DHCP reservations.
+- VPN tunnel addresses are assigned from the dedicated 172.16.100.0/24 network.
+
+---
+
+# Current Address Utilization
+
+| Environment | Status |
+|-------------|--------|
+| AWS | Operational |
+| Azure | Operational |
+| On-Premises | Operational |
+| WireGuard Tunnel | Operational |
+| Azure Active Directory | Operational |
+| Windows Server 2025 | Operational |
+| Azure Windows 11 Client | Planned |
+| On-Premises Windows 11 Client | Planned |
+| File Server | Planned |
+| Internal Application Server | Planned |

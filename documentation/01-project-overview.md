@@ -1,14 +1,14 @@
-# 01 - Project Overview
+# Project Overview
 
 # Enterprise Hybrid Cloud Platform
 
 ## Overview
 
-The Enterprise Hybrid Cloud Platform is a real-world hybrid cloud infrastructure project designed to demonstrate enterprise networking, cloud engineering, Windows administration, Linux administration, DevOps, and cybersecurity.
+The Enterprise Hybrid Cloud Platform is a production-style infrastructure project designed to demonstrate enterprise networking, hybrid cloud architecture, Windows Server administration, Linux administration, DevOps, and cybersecurity.
 
-The project combines Amazon Web Services (AWS), Microsoft Azure, and an on-premises security lab into a single enterprise environment connected through a secure WireGuard site-to-site VPN.
+The project integrates Amazon Web Services (AWS), Microsoft Azure, and an on-premises VMware environment into a unified enterprise infrastructure connected through a secure WireGuard hub-and-spoke VPN.
 
-Rather than focusing on a single technology, the project demonstrates how multiple enterprise platforms work together to support application development, production hosting, identity management, and security operations.
+Rather than focusing on a single technology, the project demonstrates how multiple enterprise platforms work together to provide secure networking, centralized identity management, cloud infrastructure, application hosting, and security operations.
 
 ---
 
@@ -17,11 +17,12 @@ Rather than focusing on a single technology, the project demonstrates how multip
 The primary objectives of this project are to:
 
 - Design a scalable hybrid cloud architecture
-- Build secure site-to-site VPN connectivity
-- Deploy enterprise Active Directory infrastructure
-- Create a managed developer environment
-- Build and deploy a production-ready web application
-- Implement CI/CD using GitHub Actions
+- Build a secure WireGuard site-to-site VPN
+- Implement centralized enterprise identity management
+- Deploy Windows Server 2025 Active Directory
+- Build a managed Windows enterprise environment
+- Deploy a production-ready web application
+- Implement CI/CD with GitHub Actions
 - Perform security testing from an isolated security lab
 - Document every phase of the implementation
 
@@ -31,21 +32,28 @@ The primary objectives of this project are to:
 
 The environment is divided into three primary locations.
 
+---
+
 ## AWS Production Environment
 
-AWS hosts all customer-facing services and acts as the central networking hub.
+AWS hosts the production application infrastructure and serves as the central networking hub.
 
-Responsibilities include:
+Current Responsibilities
 
-- Production Web Application
+- WireGuard VPN Hub
+- Linux Routing
+- VPN Packet Forwarding
+- Hybrid Cloud Connectivity
+
+Planned Services
+
 - React Frontend
 - FastAPI Backend
 - PostgreSQL Database
+- Amazon ECS
 - Application Load Balancer
 - Amazon S3
 - CloudWatch
-- AWS IAM
-- WireGuard VPN Hub
 
 Network
 
@@ -55,20 +63,25 @@ Network
 
 ---
 
-## Azure Corporate Environment
+## Azure Enterprise Environment
 
-Azure represents the organization's corporate IT infrastructure.
+Azure represents the organization's corporate infrastructure.
 
-Responsibilities include:
+Current Responsibilities
 
+- Windows Server 2025
 - Active Directory Domain Services
 - DNS
-- Group Policy
-- Windows Server 2025
+- Enterprise User Management
+- Security Groups
+- WireGuard VPN Gateway
+
+Planned Services
+
 - Windows File Server
 - Internal Application Server
-- Windows 11 Developer Workstation
-- Enterprise User Management
+- Windows 11 Enterprise Workstation
+- Group Policy
 
 Network
 
@@ -80,15 +93,20 @@ Network
 
 ## On-Premises Security Lab
 
-The on-premises environment represents the organization's security operations and testing environment.
+The on-premises environment simulates an enterprise office and security operations lab.
 
-Responsibilities include:
+Current Responsibilities
 
-- WireGuard VPN Gateway
+- Ubuntu WireGuard Gateway
 - Kali Linux
-- Security Test Workstation
-- Penetration Testing
-- Vulnerability Assessment
+- VMware Infrastructure
+- Secure Remote Administration
+
+Planned Services
+
+- Windows 11 Enterprise Client
+- Burp Suite Testing
+- OWASP ZAP
 - Network Analysis
 - Application Security Validation
 
@@ -109,37 +127,48 @@ Network
                                │
                                ▼
                   AWS Production Environment
-                React • FastAPI • PostgreSQL
-                     WireGuard VPN Hub
-                         10.0.0.0/16
-                        /             \
-                       /               \
-                      ▼                 ▼
+                 WireGuard VPN Hub (10.0.0.0/16)
+                               │
+                ┌──────────────┴──────────────┐
+                │                             │
+                ▼                             ▼
 
-       Azure Corporate IT       On-Premises Security Lab
-            10.1.0.0/16              10.2.0.0/16
+      Azure Enterprise              On-Premises Security Lab
+          10.1.0.0/16                    10.2.0.0/16
+
+      Active Directory                 Kali Linux
+      Windows Server 2025              VMware
+      DNS                              WireGuard Gateway
 ```
 
 ---
 
 # Enterprise Workflow
 
-The project simulates the workflow of a modern software development organization.
+The project simulates the workflow of a modern enterprise organization.
 
-## Corporate IT
+## Enterprise Identity
 
-Enterprise user accounts are created and managed within Active Directory.
+Users are centrally managed through Active Directory hosted in Azure.
 
-Example users:
+Current Implementation
 
-- Eric.Admin
-- John.Developer
+- Active Directory Domain
+- Organizational Units
+- Administrative User
+- Security Group
+
+Future
+
+- Domain-joined Windows 11 clients
+- Group Policy
+- Enterprise authentication
 
 ---
 
 ## Software Development
 
-Developers authenticate to a domain-joined Windows 11 workstation hosted in Azure.
+Developers will authenticate to domain-joined Windows 11 workstations.
 
 Development tools include:
 
@@ -153,22 +182,23 @@ Development tools include:
 
 ## Source Control
 
-Application source code is maintained in GitHub.
+Application source code is maintained using GitHub.
 
-Development follows standard Git workflows including:
+Development workflow includes:
 
-- Feature development
+- Feature branches
 - Version control
 - Pull requests
-- Source history
+- Code review
+- Documentation
 
 ---
 
 ## Continuous Integration
 
-GitHub Actions automatically builds and deploys the application to AWS.
+GitHub Actions will automate application deployment.
 
-Deployment workflow:
+Deployment workflow
 
 ```
 Developer
@@ -190,9 +220,9 @@ AWS Production
 
 ## Production Hosting
 
-AWS hosts the production application.
+AWS will host the production application.
 
-Customers access the application through:
+Application architecture
 
 ```
 Internet
@@ -203,22 +233,34 @@ Cloudflare
 
 ↓
 
-AWS Production
+Application Load Balancer
+
+↓
+
+React Frontend
+
+↓
+
+FastAPI Backend
+
+↓
+
+PostgreSQL
 ```
 
 ---
 
 ## Security Operations
 
-After deployment, the application is validated using the on-premises security lab.
+The on-premises security lab will validate the deployed application.
 
-Security testing includes:
+Planned testing includes:
 
 - Network Discovery
 - Port Enumeration
-- Burp Suite Testing
+- Burp Suite
 - OWASP ZAP
-- Wireshark Analysis
+- Wireshark
 - API Testing
 - HTTPS Validation
 - Vulnerability Assessment
@@ -227,7 +269,7 @@ Security testing includes:
 
 # Core Technologies
 
-## Cloud Platforms
+## Cloud
 
 - Amazon Web Services
 - Microsoft Azure
@@ -238,10 +280,10 @@ Security testing includes:
 ## Networking
 
 - WireGuard
-- Site-to-Site VPN
+- Hub-and-Spoke VPN
 - Linux Routing
-- TCP/IP
 - Static Routing
+- TCP/IP
 
 ---
 
@@ -249,7 +291,7 @@ Security testing includes:
 
 - Ubuntu Server
 - Windows Server 2025
-- Windows 11
+- Windows 11 Enterprise
 - Kali Linux
 
 ---
@@ -258,17 +300,18 @@ Security testing includes:
 
 - Active Directory Domain Services
 - DNS
-- Group Policy
+- Organizational Units
+- Security Groups
 - AWS IAM
 
 ---
 
 ## Development
 
-- Visual Studio Code
 - Git
 - GitHub
 - GitHub Actions
+- Visual Studio Code
 - Python
 - React
 - FastAPI
@@ -278,6 +321,7 @@ Security testing includes:
 
 ## Security
 
+- Kali Linux
 - Burp Suite Community
 - OWASP ZAP
 - Wireshark
@@ -290,40 +334,59 @@ Security testing includes:
 
 ## Completed
 
-- Hybrid cloud architecture design
-- AWS virtual network
-- Azure virtual network
-- On-premises network
-- WireGuard hub-and-spoke VPN
-- AWS ↔ Azure VPN connectivity
-- AWS ↔ On-Premises VPN connectivity
-- Static routing
-- Linux IP forwarding
-- Network diagrams
-- Project documentation
+### Networking
+
+- AWS Virtual Private Cloud
+- Azure Virtual Network
+- On-Premises VMware Network
+- Hub-and-Spoke WireGuard VPN
+- AWS ↔ Azure Connectivity
+- AWS ↔ On-Premises Connectivity
+- Azure ↔ On-Premises Connectivity
+- Linux Routing
+- Packet Forwarding
+- Network Validation
+
+### Identity
+
+- Windows Server 2025 Deployment
+- Active Directory Domain Services
+- DNS
+- Organizational Units
+- Administrative User
+- Administrative Security Group
+
+### Documentation
+
+- Architecture Diagrams
+- Infrastructure Documentation
+- VPN Documentation
+- Security Documentation
+- Validation Documentation
 
 ---
 
 ## Current Phase
 
-**Phase 2 – Enterprise Identity Services**
+**Phase 3 – Enterprise Workstations**
 
-Current work focuses on building the Azure corporate environment, including:
+Current work focuses on:
 
-- Windows Server 2025
-- Active Directory
-- DNS
+- Azure Windows 11 Enterprise Client
+- On-Premises Windows 11 Enterprise Client
+- Domain Join
 - Group Policy
-- Windows 11 Developer Workstation
+- Cross-site Authentication
 
 ---
 
 ## Future Phases
 
+- File Server
+- Internal Application Server
 - Web Application Development
-- AWS Production Deployment
 - CI/CD Pipeline
-- Security Operations
+- Security Testing
 - Monitoring
 - Infrastructure Automation
 
@@ -331,42 +394,47 @@ Current work focuses on building the Azure corporate environment, including:
 
 # Learning Objectives
 
-This project provides hands-on experience with:
+This project provides practical experience with:
 
 - Enterprise Networking
 - Hybrid Cloud Architecture
+- WireGuard VPN
 - Windows Server Administration
-- Linux Administration
 - Active Directory
+- Linux Administration
 - Cloud Infrastructure
 - DevOps
 - Git
+- GitHub Actions
 - CI/CD
-- Web Application Deployment
+- Application Deployment
 - Cybersecurity
 - Infrastructure Documentation
 
 ---
 
-# Project Documentation
+# Repository Documentation
 
-The repository contains detailed documentation covering:
+The repository includes detailed documentation covering:
 
 - Project Planning
 - Network Architecture
-- VPN Configuration
-- Routing
-- Azure Infrastructure
+- IP Addressing
 - AWS Infrastructure
+- Azure Infrastructure
+- VPN Architecture
+- WireGuard Implementation
+- Active Directory
 - Security
-- Testing & Validation
-- Troubleshooting
+- Testing and Validation
 - Future Roadmap
 
 ---
 
 # Summary
 
-The Enterprise Hybrid Cloud Platform is a comprehensive infrastructure project that demonstrates how AWS, Azure, and an on-premises security lab can be integrated into a modern enterprise environment.
+The Enterprise Hybrid Cloud Platform demonstrates how AWS, Microsoft Azure, and an on-premises enterprise environment can be integrated into a secure hybrid cloud infrastructure.
 
-The project follows industry practices by separating production services, enterprise identity, software development, and security operations into dedicated environments while documenting every stage of implementation. It serves as a practical portfolio demonstrating hybrid cloud architecture, enterprise networking, systems administration, DevOps, and cybersecurity.
+The networking foundation has been completed with a fully operational WireGuard hub-and-spoke VPN, centralized Active Directory services, enterprise DNS, and validated cross-site connectivity. The remaining project phases focus on Windows client deployment, enterprise identity integration, application hosting, DevOps automation, and security testing.
+
+The completed project will showcase practical experience in hybrid cloud architecture, enterprise networking, Windows administration, Linux administration, DevOps, and cybersecurity while serving as a comprehensive portfolio demonstrating real-world infrastructure engineering.

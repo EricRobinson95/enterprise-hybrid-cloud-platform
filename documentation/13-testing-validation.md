@@ -1,77 +1,56 @@
-# 13 - Testing & Validation
+# Testing & Validation
 
-# Overview
+## Overview
 
-This document records the testing and validation performed throughout the Enterprise Hybrid Cloud Platform project.
+This document summarizes the testing and validation performed to verify the functionality of the Enterprise Hybrid Cloud Platform.
 
-Testing verifies that networking, VPN connectivity, routing, cloud infrastructure, and future enterprise services operate as designed.
-
----
-
-# Testing Objectives
-
-- Verify hybrid cloud network connectivity
-- Validate WireGuard VPN tunnels
-- Confirm Linux routing configuration
-- Verify IP forwarding
-- Validate cloud network segmentation
-- Test application connectivity
-- Provide repeatable verification procedures
-- Document expected results
+Testing was performed after each major deployment milestone to confirm that network connectivity, VPN routing, Active Directory services, and cloud infrastructure were operating as expected.
 
 ---
 
 # Test Environment
 
-## AWS Production
-
-| Component | Status |
-|----------|--------|
-| VPC | ✅ |
-| EC2 | ✅ |
-| WireGuard Hub | ✅ |
-| Security Groups | ✅ |
+| Environment | Network |
+|------------|------------|
+| AWS | 10.0.0.0/16 |
+| Azure | 10.1.0.0/16 |
+| On-Premises | 10.2.0.0/16 |
+| WireGuard Tunnel | 172.16.100.0/24 |
 
 ---
 
-## Azure Corporate Environment
+# Validation Objectives
 
-| Component | Status |
-|----------|--------|
-| Virtual Network | ✅ |
-| Ubuntu WireGuard Gateway | ✅ |
-| Windows Server 2025 | Planned |
-| Windows 11 Developer VM | Planned |
+The following objectives were tested.
 
----
-
-## On-Premises Security Lab
-
-| Component | Status |
-|----------|--------|
-| Ubuntu WireGuard Gateway | ✅ |
-| Kali Linux | Planned |
-| Security Test Workstation | Planned |
+- WireGuard VPN connectivity
+- Site-to-site communication
+- Hybrid cloud routing
+- Linux routing
+- Packet forwarding
+- Active Directory deployment
+- DNS services
+- Secure remote administration
+- End-to-end connectivity
 
 ---
 
-# Network Validation
+# AWS Validation
 
-## IP Address Verification
+## EC2 Deployment
 
-Verify interface configuration.
+### Verified
 
-Command
+- EC2 instance deployed
+- Public IP assigned
+- Private IP assigned
+- Security Group configured
+- Source/Destination Check disabled
 
-```bash
-ip addr
-```
+Evidence
 
-Expected Result
-
-- Correct interface addresses
-- Correct subnet masks
-- Correct default gateway
+- AWS Console
+- EC2 Instance Overview
 
 Status
 
@@ -79,21 +58,246 @@ Status
 
 ---
 
-## Routing Table Validation
+## WireGuard Gateway
 
-Verify Linux routing table.
+Verified
 
-Command
+- WireGuard installed
+- VPN interface created
+- Tunnel established
+- Peer communication successful
+
+Verification Commands
+
+```bash
+wg
+
+ip addr
+
+ip route
+```
+
+Status
+
+✅ Passed
+
+---
+
+## Linux Routing
+
+Verified
+
+```bash
+ip route
+
+cat /proc/sys/net/ipv4/ip_forward
+```
+
+Status
+
+✅ Passed
+
+---
+
+## Firewall
+
+Verified
+
+```bash
+iptables -L
+
+iptables -t nat -L
+```
+
+Status
+
+✅ Passed
+
+---
+
+# Azure Validation
+
+## Azure Virtual Machine
+
+Verified
+
+- Ubuntu Server deployed
+- Public IP assigned
+- Private IP assigned
+- SSH access successful
+
+Status
+
+✅ Passed
+
+---
+
+## WireGuard Gateway
+
+Verified
+
+```bash
+wg
+
+ip route
+
+ip addr
+```
+
+Status
+
+✅ Passed
+
+---
+
+## Windows Server 2025
+
+Verified
+
+- Windows Server installed
+- Active Directory Domain Services installed
+- DNS installed
+
+Status
+
+✅ Passed
+
+---
+
+## Active Directory
+
+Verified
+
+- Domain created
+- Organizational Units created
+- User created
+- Security Group created
+- User assigned to Security Group
+
+Status
+
+✅ Passed
+
+---
+
+# On-Premises Validation
+
+## VMware
+
+Verified
+
+- Ubuntu Server deployed
+- Network configured
+- SSH configured
+
+Status
+
+✅ Passed
+
+---
+
+## WireGuard
+
+Verified
+
+```bash
+wg
+
+ip route
+
+ip addr
+```
+
+Status
+
+✅ Passed
+
+---
+
+# VPN Validation
+
+## AWS ↔ Azure
+
+Verified
+
+- Tunnel established
+- Handshake successful
+- Routing successful
+- ICMP successful
+
+Evidence
+
+- wg output
+- ping
+- tcpdump
+
+Status
+
+✅ Passed
+
+---
+
+## AWS ↔ On-Premises
+
+Verified
+
+- Tunnel established
+- Handshake successful
+- Routing successful
+- ICMP successful
+
+Evidence
+
+- wg output
+- ping
+- tcpdump
+
+Status
+
+✅ Passed
+
+---
+
+## Azure ↔ On-Premises
+
+Verified
+
+- Routing through AWS Hub
+- Successful packet forwarding
+- Successful ICMP communication
+- Successful return traffic
+
+Evidence
+
+- ping
+- tcpdump
+- wg
+
+Status
+
+✅ Passed
+
+---
+
+# Routing Validation
+
+Verified
 
 ```bash
 ip route
 ```
 
-Expected Result
+Executed on
 
-- Local subnet routes
+- AWS
+- Azure
+- On-Premises
+
+Confirmed
+
+- Local networks
+- Remote networks
 - WireGuard routes
-- Default gateway
 
 Status
 
@@ -101,378 +305,150 @@ Status
 
 ---
 
-## Route Lookup
-
-Verify route selection.
-
-Command
-
-```bash
-ip route get <destination-ip>
-```
-
-Example
-
-```bash
-ip route get 10.1.1.4
-```
-
-Expected Result
-
-Traffic is routed through the expected interface.
-
-Status
-
-✅ Passed
-
----
-
-# WireGuard Validation
-
-## Tunnel Status
-
-Verify VPN status.
-
-Command
-
-```bash
-sudo wg
-```
-
-Verify
-
-- Peer status
-- Latest handshake
-- Transfer statistics
-- Allowed IPs
-
-Status
-
-✅ Passed
-
----
-
-## WireGuard Interface
-
-Verify interface configuration.
-
-Command
-
-```bash
-ip addr show wg0
-```
-
-Expected Result
-
-- Interface active
-- Tunnel IP assigned
-
-Status
-
-✅ Passed
-
----
-
-## IP Forwarding
-
-Verify Linux forwarding.
-
-Command
-
-```bash
-sysctl net.ipv4.ip_forward
-```
-
-Expected Result
-
-```
-net.ipv4.ip_forward = 1
-```
-
-Status
-
-✅ Passed
-
----
-
-# Connectivity Testing
-
-## AWS → Azure
-
-Command
-
-```bash
-ping <Azure IP>
-```
-
-Status
-
-✅ Passed
-
----
-
-## Azure → AWS
-
-Command
-
-```bash
-ping <AWS IP>
-```
-
-Status
-
-✅ Passed
-
----
-
-## AWS → On-Premises
-
-Command
-
-```bash
-ping <On-Premises IP>
-```
-
-Status
-
-✅ Passed
-
----
-
-## On-Premises → AWS
-
-Command
-
-```bash
-ping <AWS IP>
-```
-
-Status
-
-✅ Passed
-
----
-
-# Traceroute Validation
-
-Verify packet path.
-
-Command
-
-```bash
-traceroute <destination-ip>
-```
-
-Expected Result
-
-Traffic follows the expected route through the WireGuard VPN.
-
-Status
-
-✅ Passed
-
----
-
-# Packet Capture Validation
-
-Traffic was inspected using tcpdump.
-
-## Verify ICMP
-
-```bash
-sudo tcpdump -ni wg0 icmp
-```
-
----
-
-## Verify WireGuard
-
-```bash
-sudo tcpdump -ni any udp port 51820
-```
-
----
-
-## Verify All Traffic
-
-```bash
-sudo tcpdump -ni any
-```
-
-Expected Result
-
-- Encrypted WireGuard traffic
-- ICMP traffic
-- UDP encapsulation
-
-Status
-
-✅ Passed
-
----
-
-# Cloud Network Validation
-
-## AWS
+# Packet Forwarding Validation
 
 Verified
 
-- VPC
-- Security Groups
-- Route Tables
-- WireGuard Hub
+```bash
+tcpdump -ni wg0
+```
+
+Confirmed
+
+- ICMP Echo Requests
+- ICMP Echo Replies
+- Bidirectional packet forwarding
+- Hub routing through AWS
 
 Status
 
 ✅ Passed
+
+---
+
+# SSH Validation
+
+Verified remote administration from the Windows management workstation.
+
+Connected to
+
+- AWS Ubuntu Server
+- Azure Ubuntu Server
+- On-Premises Ubuntu Server
+
+Status
+
+✅ Passed
+
+---
+
+# Screenshots
+
+The following screenshots are included within the project documentation.
+
+## AWS
+
+- EC2 Overview
+- Security Groups
+- Route Tables
+- WireGuard Status
+- ip route
+- iptables
+- Source/Destination Check
 
 ---
 
 ## Azure
 
-Verified
-
+- Virtual Machine Overview
 - Virtual Network
-- NSG Rules
-- Ubuntu WireGuard Gateway
-
-Status
-
-✅ Passed
+- Network Security Groups
+- User Defined Routes
+- Windows Server 2025
+- Active Directory
+- WireGuard Status
+- ip route
 
 ---
 
 ## On-Premises
 
-Verified
+- VMware Topology
+- WireGuard Status
+- ip route
 
-- VMware Networking
-- Ubuntu WireGuard Gateway
-- Local Routing
+---
+
+## VPN
+
+- WireGuard Handshakes
+- Successful Ping Tests
+- tcpdump Packet Capture
+- End-to-End Connectivity
+
+---
+
+# Issues Encountered
+
+## WireGuard Routing
+
+Issue
+
+Azure and On-Premises established successful WireGuard handshakes but could not communicate through the AWS hub.
+
+Root Cause
+
+The WireGuard `AllowedIPs` configuration on the spoke gateways did not include the opposite spoke's tunnel IP address.
+
+Resolution
+
+Updated the Azure and On-Premises WireGuard configurations to include the required tunnel addresses in `AllowedIPs`.
+
+Result
+
+Successful end-to-end communication between Azure and the On-Premises environment.
 
 Status
 
-✅ Passed
+✅ Resolved
 
 ---
 
-# Current VPN Validation
+# Current Validation Status
 
-## Successfully Verified
-
-| Test | Status |
-|------|--------|
-| AWS ↔ Azure VPN | ✅ |
-| AWS ↔ On-Premises VPN | ✅ |
-| WireGuard Handshakes | ✅ |
-| Linux Routing | ✅ |
-| IP Forwarding | ✅ |
-| Static Routing | ✅ |
-| Packet Capture | ✅ |
-
----
-
-# Current Limitation
-
-The hybrid cloud environment currently implements a **WireGuard hub-and-spoke topology**.
-
-The following communication paths have been validated:
-
-- AWS ↔ Azure
-- AWS ↔ On-Premises
-
-Direct Azure ↔ On-Premises transit routing has not been implemented in the current version of the project.
-
-This does not impact the intended architecture because:
-
-- Azure hosts enterprise identity and developer services.
-- AWS hosts the production web application.
-- On-Premises performs security testing against AWS-hosted resources.
+| Component | Status |
+|-----------|--------|
+| AWS Infrastructure | ✅ Passed |
+| Azure Infrastructure | ✅ Passed |
+| On-Premises Infrastructure | ✅ Passed |
+| WireGuard VPN | ✅ Passed |
+| Hub-and-Spoke Routing | ✅ Passed |
+| SSH Administration | ✅ Passed |
+| Active Directory | ✅ Passed |
+| DNS Services | ✅ Passed |
+| End-to-End Connectivity | ✅ Passed |
 
 ---
 
-# Future Testing
+# Remaining Validation
 
-The following validation will be completed during future project phases.
+The following validation will be completed after the remaining infrastructure is deployed.
 
-## Azure
-
-- Active Directory
-- DNS
-- Group Policy
-- Domain Join
-- File Server
-- Windows 11 Developer Workstation
-
----
-
-## AWS
-
-- React Application
-- FastAPI API
-- PostgreSQL
-- HTTPS
-- Load Balancer
-- CloudWatch
-- IAM
+- Azure Windows 11 domain join
+- On-Premises Windows 11 domain join
+- Kerberos authentication
+- DNS name resolution
+- Group Policy application
+- Cross-site authentication
+- File Server access
+- Internal application testing
 
 ---
 
-## Security
+# Conclusion
 
-The on-premises security lab will validate the production environment using:
+The Enterprise Hybrid Cloud Platform has successfully completed infrastructure deployment and network validation.
 
-- Burp Suite Community
-- OWASP ZAP
-- Nmap
-- Wireshark
-- Vulnerability Assessment
-- Authentication Testing
-- Security Header Validation
-- API Testing
+Testing confirmed secure communication between AWS, Azure, and the on-premises environment through a WireGuard hub-and-spoke VPN.
 
----
-
-# Acceptance Criteria
-
-The project is considered operational when the following requirements are met.
-
-## Networking
-
-- ✅ Hybrid network deployed
-- ✅ WireGuard VPN operational
-- ✅ Static routing configured
-- ✅ Linux routing verified
-
----
-
-## Infrastructure
-
-- Azure enterprise environment deployed
-- AWS production environment deployed
-- On-premises security lab operational
-
----
-
-## Application
-
-- React frontend deployed
-- FastAPI backend deployed
-- PostgreSQL operational
-- HTTPS configured
-
----
-
-## Security
-
-- Security testing completed
-- Vulnerability assessment completed
-- Production validation completed
-
----
-
-# Summary
-
-Testing and validation confirm that the hybrid cloud networking foundation is operational.
-
-AWS functions as the central WireGuard hub, providing secure connectivity to Azure and the on-premises security lab. The current implementation establishes the networking platform required for the remaining project phases, including enterprise identity services, application deployment, CI/CD, and security testing.
+The hybrid cloud networking foundation is complete and operational. Remaining work focuses on deploying Windows 11 clients, validating Active Directory domain joins, applying Group Policy, and completing enterprise services.

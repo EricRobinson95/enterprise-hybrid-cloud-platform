@@ -1,21 +1,23 @@
-# 11 - Security
+# Security
 
-# Overview
+## Overview
 
 Security is a foundational component of the Enterprise Hybrid Cloud Platform. The environment is designed using a defense-in-depth strategy that combines secure networking, identity management, cloud security controls, operating system hardening, and application security.
 
-The project separates production workloads, corporate infrastructure, and security operations into dedicated environments while maintaining encrypted communication through a WireGuard site-to-site VPN.
+The platform securely connects Amazon Web Services (AWS), Microsoft Azure, and an on-premises VMware environment through an encrypted WireGuard hub-and-spoke VPN while maintaining logical separation between production workloads, enterprise infrastructure, and the security testing environment.
 
 ---
 
 # Security Objectives
 
+The security architecture was designed to achieve the following objectives:
+
 - Protect production workloads
-- Secure communications between environments
-- Implement enterprise identity management
+- Secure communication between environments
+- Centralize enterprise identity management
 - Enforce least privilege access
 - Secure cloud infrastructure
-- Provide a dedicated security testing environment
+- Isolate security testing activities
 - Demonstrate enterprise security best practices
 
 ---
@@ -23,41 +25,47 @@ The project separates production workloads, corporate infrastructure, and securi
 # Security Architecture
 
 ```
-                    Internet
-                        │
-                  Cloudflare DNS
-                        │
-                        ▼
-               AWS Production Environment
-                        │
-                Security Groups
-                        │
-                WireGuard VPN Hub
-                  /             \
-                 /               \
-                ▼                 ▼
-
-Azure Corporate IT      On-Premises Security Lab
-      AD DS                  Kali Linux
-      DNS                    Burp Suite
-      Group Policy           OWASP ZAP
+                           Internet
+                               │
+                         Cloudflare DNS
+                               │
+                               ▼
+                    AWS Production Environment
+                               │
+                 Application Load Balancer (Planned)
+                               │
+                     AWS WireGuard VPN Hub
+                         172.16.100.1
+                    ┌──────────┴──────────┐
+                    │                     │
+                    ▼                     ▼
+          Azure Enterprise        On-Premises Lab
+          10.1.0.0/16             10.2.0.0/16
+                    │                     │
+      Windows Server 2025          Kali Linux
+      Active Directory             Burp Suite
+      DNS Services                 OWASP ZAP
+      Security Groups              Wireshark
 ```
 
 ---
 
-# Security Layers
+# Defense-in-Depth
+
+The environment uses multiple security layers.
 
 ## Layer 1 – Network Security
 
-Traffic between environments is protected using:
+Implemented
 
 - WireGuard Site-to-Site VPN
+- Hub-and-Spoke VPN Architecture
 - Encrypted UDP Tunnels
+- Private IP Addressing
 - Static Routing
 - Linux IP Forwarding
-- Private Address Space
 
-All inter-site communication is encrypted before traversing the public Internet.
+All communication between AWS, Azure, and the on-premises environment is encrypted before traversing the public Internet.
 
 ---
 
@@ -65,85 +73,108 @@ All inter-site communication is encrypted before traversing the public Internet.
 
 ### AWS
 
-Security controls include:
+Implemented
 
 - Security Groups
-- AWS IAM
-- Private Subnets
-- Least Privilege Access
-- CloudWatch Logging
+- Private Networking
+- Source/Destination Check Disabled (VPN Router)
+- Linux Firewall
+- SSH Administration
+
+Planned
+
+- IAM Roles
+- CloudWatch Monitoring
+- AWS WAF
+- Secrets Manager
 
 ---
 
 ### Azure
 
-Security controls include:
+Implemented
 
 - Network Security Groups (NSGs)
+- Azure Route Tables (UDRs)
 - Active Directory
-- Group Policy
+- DNS Server
 - Windows Firewall
-- Role-Based Administration
+
+Planned
+
+- Azure Backup
+- Azure Monitor
+- Microsoft Defender for Cloud
 
 ---
 
-# Identity Security
+## Layer 3 – Identity Security
 
-Enterprise identity is managed using Windows Server 2025 Active Directory.
+Enterprise identity is centralized through Windows Server 2025 Active Directory hosted in Azure.
 
-Responsibilities include:
+Implemented
+
+- Active Directory Domain Services
+- DNS
+- Organizational Units
+- Administrative User
+- Administrative Security Group
+
+Planned
+
+- Windows 11 Domain Join
+- Group Policy Objects
+- Additional Security Groups
+- Kerberos Validation
+
+---
+
+# Identity and Access Management
+
+## Active Directory
+
+Active Directory provides:
 
 - User Authentication
 - Computer Authentication
-- Group Policy
+- Centralized Authorization
 - DNS
-- Security Groups
-- Authorization
+- Security Group Management
+- Enterprise Identity Services
 
-Example accounts
-
-```
-Eric.Admin
-
-John.Developer
-```
-
-Administrative accounts are separated from standard user accounts to reduce risk.
+Administrative accounts are separated from standard user accounts to reduce administrative risk.
 
 ---
 
-# AWS IAM
+## AWS IAM
 
-AWS Identity and Access Management controls access to AWS resources.
+AWS Identity and Access Management controls authorization within AWS.
 
-IAM is responsible for:
+Responsibilities include:
 
-- Administrator permissions
+- Administrative permissions
 - Service roles
 - Resource authorization
 - Least privilege access
 
-IAM does **not** replace Active Directory.
-
-Active Directory authenticates enterprise users, while AWS IAM authorizes access to AWS resources.
+AWS IAM complements Active Directory rather than replacing it.
 
 ---
 
-# WireGuard Security
+# VPN Security
 
-WireGuard provides encrypted communication between:
+Secure communication between cloud environments is provided through WireGuard.
 
-- AWS
-- Azure
-- On-Premises
+Current VPN Features
 
-Security features include:
-
-- Public Key Cryptography
+- Site-to-Site VPN
+- Hub-and-Spoke Architecture
+- Public Key Authentication
 - Mutual Authentication
-- Modern Encryption
-- Low Attack Surface
-- Minimal Configuration
+- ChaCha20 Encryption
+- Poly1305 Authentication
+- Curve25519 Key Exchange
+- Perfect Forward Secrecy
 
 Tunnel Network
 
@@ -151,11 +182,19 @@ Tunnel Network
 172.16.100.0/24
 ```
 
+Current Tunnel Endpoints
+
+| Gateway | Tunnel Address |
+|----------|----------------|
+| AWS | 172.16.100.1 |
+| Azure | 172.16.100.2 |
+| On-Premises | 172.16.100.3 |
+
 ---
 
 # Network Segmentation
 
-Each environment is isolated using dedicated private networks.
+The enterprise environment uses dedicated private address spaces.
 
 | Environment | Network |
 |------------|----------|
@@ -163,74 +202,63 @@ Each environment is isolated using dedicated private networks.
 | Azure | 10.1.0.0/16 |
 | On-Premises | 10.2.0.0/16 |
 
-Within each environment, resources are separated into dedicated subnets.
-
----
-
-# Production Security
-
-AWS hosts the customer-facing application.
-
-Planned production components:
-
-- Application Load Balancer
-- React Frontend
-- FastAPI Backend
-- PostgreSQL Database
-
-Production security includes:
-
-- HTTPS
-- Security Groups
-- Private Database Subnet
-- IAM Roles
-- CloudWatch Monitoring
+Each environment is further segmented into dedicated subnets for infrastructure, clients, applications, and management services.
 
 ---
 
 # Operating System Security
 
-## Ubuntu
+## Ubuntu Linux
 
-Security measures include:
+Implemented
 
-- SSH Key Authentication (recommended)
-- UFW / iptables
+- WireGuard VPN
+- Linux IP Forwarding
+- iptables Firewall
+- Secure SSH Administration
+
+Recommended
+
+- SSH Key Authentication
 - Automatic Security Updates
-- WireGuard
-- Least Privilege
+- Fail2Ban
 
 ---
 
-## Windows Server
+## Windows Server 2025
 
-Security measures include:
+Implemented
 
-- Active Directory
-- Group Policy
+- Active Directory Domain Services
+- DNS Server
 - Windows Firewall
-- Security Groups
-- DNS Security
+- Administrative User
+- Administrative Security Group
+
+Planned
+
+- Group Policy
+- File Server
+- Security Baselines
 
 ---
 
-## Windows 11
+## Windows 11 Enterprise
 
-Developer workstation security includes:
+Planned
 
 - Domain Authentication
 - Group Policy
 - Windows Defender
-- Least Privilege User Account
-- Remote Desktop
+- Least Privilege User Accounts
+- BitLocker
+- Windows Firewall
 
 ---
 
 # Remote Administration
 
-Administrative access is limited to authorized personnel.
-
-Administration methods include:
+Current administrative access methods include:
 
 AWS
 
@@ -238,8 +266,7 @@ AWS
 
 Azure
 
-- Remote Desktop
-- Windows Administration
+- Remote Desktop (Windows Server)
 - SSH (Ubuntu Gateway)
 
 On-Premises
@@ -247,131 +274,157 @@ On-Premises
 - SSH
 - VMware Console
 
+Administrative access is limited to authorized accounts.
+
 ---
 
-# Security Testing Environment
+# Security Operations Lab
 
-The on-premises environment functions as an isolated security operations lab.
+The on-premises VMware environment serves as an isolated security testing lab.
 
-Planned tools include:
+Current Resources
 
 - Kali Linux
+- Ubuntu WireGuard Gateway
+
+Planned Tools
+
 - Burp Suite Community
 - OWASP ZAP
 - Nmap
 - Wireshark
 - Custom Python Security Scripts
 
-Security testing is performed only against systems owned and managed within this project.
+Testing is performed only against infrastructure owned and managed within this project.
 
 ---
 
 # Planned Security Testing
 
-The production application will be evaluated using:
-
-## Network Testing
+## Network Security
 
 - Host Discovery
 - Port Scanning
 - Service Enumeration
+- Firewall Validation
 
 ---
 
-## Web Application Testing
+## Web Application Security
 
 - Authentication Testing
 - Session Management
 - HTTP Header Validation
+- API Security
 - Directory Enumeration
-- API Testing
 
 ---
 
 ## Vulnerability Assessment
 
 - OWASP Top 10
-- SQL Injection Testing
+- SQL Injection
 - Cross-Site Scripting (XSS)
-- Broken Authentication
 - Security Misconfiguration
-
-Testing will be conducted only against the project environment.
+- Broken Authentication
 
 ---
 
-# Logging & Monitoring
+# Logging and Monitoring
 
 ## AWS
 
-Monitoring
+Planned
 
 - CloudWatch Metrics
 - CloudWatch Logs
-- Alerts
+- CloudWatch Alarms
 
 ---
 
 ## Azure
 
-Monitoring
+Current
+
+- Windows Event Logs
+
+Planned
 
 - Azure Monitor
-- Windows Event Logs
+- Microsoft Defender for Cloud
 
 ---
 
 ## Linux
 
-Monitoring
+Current
 
 - System Logs
-- WireGuard Logs
 - SSH Logs
+- WireGuard Logs
 
 ---
 
 # Security Validation
 
-The following controls have been validated.
+The following security controls have been validated.
 
-## Networking
+## Network Security
+
+Validated
 
 - WireGuard VPN
-- Linux Routing
-- IP Forwarding
-- Encrypted Tunnel Connectivity
+- Encrypted Site-to-Site Connectivity
+- Linux IP Forwarding
+- Packet Forwarding
+- Cross-Site Routing
 
 Status
 
-✅ Completed
+✅ Complete
 
 ---
 
-## Cloud
+## Cloud Security
 
 Validated
 
 - AWS Security Groups
 - Azure Network Security Groups
-- Private Networking
+- Azure Route Tables
+- Network Segmentation
 
 Status
 
-✅ Completed
+✅ Complete
 
 ---
 
-## Planned Validation
+## Identity Security
 
-- Active Directory Security
+Validated
+
+- Active Directory Installation
+- DNS Installation
+- Administrative User
+- Security Group Creation
+
+Status
+
+✅ Complete
+
+---
+
+## Remaining Validation
+
+- Windows 11 Domain Join
 - Group Policy
-- Windows File Permissions
+- Kerberos Authentication
+- DNS Resolution Across VPN
+- File Server Permissions
 - Application Authentication
 - HTTPS
 - API Authorization
-- Security Testing
-- Vulnerability Assessment
 
 ---
 
@@ -379,30 +432,35 @@ Status
 
 ## Operational
 
-- WireGuard VPN
-- Secure Site-to-Site Connectivity
+- WireGuard Hub-and-Spoke VPN
 - AWS Security Groups
-- Azure NSGs
+- Azure Network Security Groups
+- Azure Route Tables
 - Linux Firewalls
+- Active Directory
+- DNS
+- Administrative User
+- Administrative Security Group
 - Network Segmentation
 
 ---
 
 ## In Progress
 
-- Active Directory Deployment
-- Enterprise Identity
-- Developer Workstation
+- Windows 11 Enterprise Clients
+- Enterprise Identity Expansion
+- Group Policy
 
 ---
 
 ## Planned
 
-- Application Authentication
+- File Server
+- Internal Application Server
 - HTTPS
-- Security Testing
 - Cloud Monitoring
-- Production Hardening
+- Vulnerability Assessments
+- Application Security Testing
 
 ---
 
@@ -411,37 +469,43 @@ Status
 Planned improvements include:
 
 - Microsoft Entra ID
-- AWS IAM Identity Center
+- Microsoft Entra Connect
 - Azure Key Vault
 - AWS Secrets Manager
+- AWS IAM Identity Center
 - Multi-Factor Authentication (MFA)
 - Docker Security
 - Kubernetes Security
-- SIEM Integration
 - Prometheus
 - Grafana
-- Web Application Firewall (AWS WAF)
+- SIEM Integration
+- AWS WAF
 - Centralized Logging
 - Automated Vulnerability Scanning
+- Infrastructure as Code Security
 
 ---
 
 # Security Principles
 
-This project follows several core security principles:
+The Enterprise Hybrid Cloud Platform follows these core security principles:
 
 - Defense in Depth
 - Least Privilege
+- Zero Trust Mindset
 - Network Segmentation
 - Secure by Default
 - Encrypted Communications
 - Centralized Identity Management
 - Separation of Duties
+- Layered Security Controls
 
 ---
 
 # Summary
 
-Security is integrated throughout every layer of the Enterprise Hybrid Cloud Platform.
+Security is integrated into every layer of the Enterprise Hybrid Cloud Platform.
 
-AWS hosts the production application and applies cloud-native security controls. Azure provides centralized enterprise identity and access management through Active Directory. The on-premises security lab provides a dedicated environment for validating the production application using industry-standard security tools. Together, these environments demonstrate a layered, enterprise-focused security architecture that supports secure networking, application deployment, identity management, and cybersecurity operations.
+AWS provides the production cloud environment and serves as the WireGuard VPN hub. Azure hosts centralized identity services through Windows Server 2025 Active Directory and DNS. The on-premises VMware environment provides an isolated security operations lab for validating enterprise infrastructure and future web applications.
+
+The networking foundation has been fully secured through encrypted site-to-site connectivity, centralized identity management, network segmentation, cloud-native security controls, and layered defense mechanisms. Future phases will expand security through Windows 11 domain integration, Group Policy, application security testing, cloud monitoring, and advanced identity services.

@@ -1,20 +1,28 @@
-# 08 - WireGuard Site-to-Site VPN
+# WireGuard Site-to-Site VPN
 
 ## Overview
 
-The Enterprise Hybrid Cloud Platform uses a **WireGuard hub-and-spoke topology** to securely connect Amazon Web Services (AWS), Microsoft Azure, and an on-premises security lab.
+This document describes the implementation of the WireGuard site-to-site VPN used within the Enterprise Hybrid Cloud Platform.
 
-AWS serves as the central VPN hub, allowing Azure and the on-premises environment to establish encrypted site-to-site VPN tunnels.
+The VPN securely connects Amazon Web Services (AWS), Microsoft Azure, and an on-premises VMware environment using a hub-and-spoke topology.
+
+AWS functions as the central VPN hub while Azure and the on-premises environment operate as spoke sites.
+
+The VPN provides encrypted communication between all three private networks while allowing each environment to maintain its own routing domain.
 
 ---
 
 # Objectives
 
-- Secure communication between cloud environments
-- Encrypt all traffic traversing the public Internet
-- Centralize routing through AWS
-- Simulate a real-world hybrid cloud deployment
-- Support future enterprise services such as Active Directory and production application hosting
+The WireGuard deployment provides
+
+- Secure hybrid cloud connectivity
+- Encrypted site-to-site communication
+- Centralized routing
+- Secure remote administration
+- Cross-cloud communication
+- On-premises integration
+- Enterprise scalability
 
 ---
 
@@ -23,27 +31,25 @@ AWS serves as the central VPN hub, allowing Azure and the on-premises environmen
 ```
                     Internet
                         │
+              Encrypted WireGuard VPN
                         │
-                Encrypted WireGuard
-                        │
-                        ▼
-                AWS WireGuard Hub
-               172.16.100.1/24
-                      /     \
-                     /       \
-                    /         \
-                   ▼           ▼
-
-Azure Gateway      On-Premises Gateway
-172.16.100.2       172.16.100.3
+               AWS WireGuard Hub
+                172.16.100.1
+              AWS VPC 10.0.0.0/16
+                 /             \
+                /               \
+               /                 \
+      Azure Spoke           On-Premises Spoke
+      172.16.100.2          172.16.100.3
+    Azure 10.1.0.0/16      VMware 10.2.0.0/16
 ```
 
 ---
 
-# Site Networks
+# VPN Networks
 
-| Site | Network |
-|-------|---------|
+| Environment | Network |
+|------------|------------|
 | AWS | 10.0.0.0/16 |
 | Azure | 10.1.0.0/16 |
 | On-Premises | 10.2.0.0/16 |
@@ -51,236 +57,360 @@ Azure Gateway      On-Premises Gateway
 
 ---
 
-# Hub-and-Spoke Design
+# WireGuard Tunnel Addresses
 
-AWS functions as the VPN hub.
-
-Azure and the on-premises environment establish encrypted tunnels directly to AWS.
-
-Current VPN topology:
-
-```
-Azure
-   │
-WireGuard
-   │
-AWS Hub
-   │
-WireGuard
-   │
-On-Premises
-```
-
-This design provides:
-
-- Centralized routing
-- Simplified management
-- Reduced VPN configuration
-- Easy expansion for future branch offices
+| Gateway | Tunnel Address |
+|----------|----------------|
+| AWS Hub | 172.16.100.1 |
+| Azure Gateway | 172.16.100.2 |
+| On-Premises Gateway | 172.16.100.3 |
 
 ---
 
-# AWS WireGuard Hub
+# WireGuard Configuration
 
-Role:
+## AWS Hub
 
-- Central VPN gateway
-- Routes traffic between connected sites
-- Terminates all VPN tunnels
+```ini
+[Interface]
+Address = 172.16.100.1
+PrivateKey = <AWS_PRIVATE_KEY>
+ListenPort = 60031
 
-Advertised Networks
+# Azure
+[Peer]
+PublicKey = <AZURE_PUBLIC_KEY>
+Endpoint = <AZURE_PUBLIC_IP>:60031
 
-```
-10.0.0.0/16
-10.1.0.0/16
-10.2.0.0/16
-172.16.100.0/24
-```
+AllowedIPs = 10.1.0.0/16,172.16.100.2/32
 
-Responsibilities
+PersistentKeepalive = 25
 
-- Forward VPN traffic
-- Maintain routing tables
-- Encrypt and decrypt WireGuard traffic
-- Serve as the central connectivity point
+# On-Premises
+[Peer]
+PublicKey = <ONPREM_PUBLIC_KEY>
+Endpoint = <ONPREM_PUBLIC_IP>:60032
 
----
+AllowedIPs = 10.2.0.0/16,172.16.100.3/32
 
-# Azure WireGuard Gateway
-
-Role
-
-Provides secure connectivity between Azure corporate infrastructure and AWS.
-
-Connected Resources
-
-- Windows Server 2025
-- Active Directory Domain Services
-- DNS
-- Windows 11 Developer Workstation
-- Windows File Server
-- Internal Application Server
-
-Advertised Network
-
-```
-10.1.0.0/16
+PersistentKeepalive = 25
 ```
 
 ---
 
-# On-Premises WireGuard Gateway
+## Azure Spoke
 
-Role
+```ini
+[Interface]
+Address = 172.16.100.2
+PrivateKey = <AZURE_PRIVATE_KEY>
+ListenPort = 60031
 
-Provides secure connectivity between the on-premises security lab and AWS.
+[Peer]
+PublicKey = <AWS_PUBLIC_KEY>
+Endpoint = <AWS_PUBLIC_IP>:60031
 
-Connected Resources
+AllowedIPs = 10.0.0.0/16,10.2.0.0/16,172.16.100.1/32,172.16.100.3/32
 
-- Kali Linux
-- Security Testing Workstation
-
-Advertised Network
-
+PersistentKeepalive = 25
 ```
-10.2.0.0/16
+
+---
+
+## On-Premises Spoke
+
+```ini
+[Interface]
+Address = 172.16.100.3
+PrivateKey = <ONPREM_PRIVATE_KEY>
+ListenPort = 60032
+
+[Peer]
+PublicKey = <AWS_PUBLIC_KEY>
+Endpoint = <AWS_PUBLIC_IP>:60031
+
+AllowedIPs = 10.0.0.0/16,10.1.0.0/16,172.16.100.1/32,172.16.100.2/32
+
+PersistentKeepalive = 25
 ```
 
 ---
 
 # Routing
 
-Each WireGuard gateway advertises its local subnet.
+## AWS Hub
 
-| Gateway | Advertised Networks |
-|----------|---------------------|
-| AWS | 10.0.0.0/16 |
-| Azure | 10.1.0.0/16 |
-| On-Premises | 10.2.0.0/16 |
+Routes
 
-Linux routing tables forward traffic through the WireGuard interface for remote networks.
+```
+10.1.0.0/16 → wg0
 
----
-
-# Security
-
-WireGuard provides:
-
-- Modern cryptography
-- Mutual peer authentication
-- Minimal attack surface
-- Encrypted site-to-site communication
-- UDP-based transport
-
-Each peer authenticates using a unique public/private key pair.
-
----
-
-# Verification
-
-The following tests were successfully completed.
-
-## WireGuard Handshakes
-
-- AWS ↔ Azure
-- AWS ↔ On-Premises
-
-Verified using:
-
-```bash
-sudo wg
+10.2.0.0/16 → wg0
 ```
 
 ---
 
-## Tunnel Status
+## Azure
 
-Verified
+Routes
 
-- Latest handshake
-- Transfer statistics
-- Connected peers
+```
+10.0.0.0/16 → wg0
+
+10.2.0.0/16 → wg0
+```
 
 ---
 
-## Routing Verification
+## On-Premises
 
-Verified using:
+Routes
+
+```
+10.0.0.0/16 → wg0
+
+10.1.0.0/16 → wg0
+```
+
+---
+
+# Linux Configuration
+
+## Enable IP Forwarding
+
+```
+net.ipv4.ip_forward=1
+```
+
+---
+
+## Verify
+
+```bash
+cat /proc/sys/net/ipv4/ip_forward
+```
+
+Expected Output
+
+```
+1
+```
+
+---
+
+# iptables
+
+Forwarding
+
+```bash
+iptables -A FORWARD -i wg0 -j ACCEPT
+
+iptables -A FORWARD -o wg0 -j ACCEPT
+```
+
+---
+
+NAT
+
+```bash
+iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+```
+
+---
+
+# WireGuard Service
+
+Start
+
+```bash
+sudo systemctl start wg-quick@wg0
+```
+
+Enable
+
+```bash
+sudo systemctl enable wg-quick@wg0
+```
+
+Restart
+
+```bash
+sudo systemctl restart wg-quick@wg0
+```
+
+Status
+
+```bash
+sudo systemctl status wg-quick@wg0
+```
+
+---
+
+# Verification Commands
+
+Check peers
+
+```bash
+wg
+```
+
+Routing
 
 ```bash
 ip route
 ```
 
-and
+Interface
 
 ```bash
-ip route get <destination>
+ip addr
+```
+
+Forwarding
+
+```bash
+cat /proc/sys/net/ipv4/ip_forward
+```
+
+Firewall
+
+```bash
+iptables -L
+
+iptables -t nat -L
+```
+
+Packet Capture
+
+```bash
+tcpdump -ni wg0
 ```
 
 ---
 
-## Traffic Capture
+# Connectivity Validation
 
-Traffic verification performed using:
+The following connectivity has been verified.
 
-```bash
-sudo tcpdump
-```
+✓ AWS ↔ Azure
 
-Observed
+✓ AWS ↔ On-Premises
 
-- Encrypted UDP traffic
-- Tunnel encapsulation
-- ICMP testing
-- Route verification
+✓ Azure ↔ On-Premises
+
+✓ On-Premises ↔ Azure
+
+✓ WireGuard handshakes
+
+✓ Static routing
+
+✓ Encrypted traffic
+
+✓ Packet forwarding
 
 ---
 
-# Current Implementation
+# Troubleshooting
 
-Completed
+## Problem
 
-- AWS WireGuard Hub
-- Azure WireGuard Gateway
-- On-Premises WireGuard Gateway
-- Hub-and-spoke topology
+WireGuard tunnels successfully established handshakes, but Azure and the On-Premises environment could not communicate through the AWS hub.
+
+---
+
+## Investigation
+
+The following components were verified during troubleshooting.
+
+- WireGuard peers
+- Public keys
+- Private keys
+- Tunnel endpoints
+- Security Groups
+- Azure Network Security Groups
 - Linux routing
+- Static routes
 - IP forwarding
-- Tunnel verification
-- Architecture documentation
+- iptables forwarding
+- NAT
+- Source/Destination Check
+- Packet forwarding
+- tcpdump captures
 
 ---
 
-# Current Limitation
+## Root Cause
 
-The current deployment successfully establishes secure VPN connectivity between:
+The Azure and On-Premises WireGuard peers did not initially include the opposite spoke's tunnel IP address in their `AllowedIPs` configuration.
 
-- AWS ↔ Azure
-- AWS ↔ On-Premises
-
-The architecture currently relies on AWS as the central hub for inter-site communication.
-
-Direct Azure ↔ On-Premises transit routing remains a future enhancement and is not required for the current project objectives.
+Although the VPN handshakes were successful, WireGuard silently rejected forwarded packets because the tunnel source addresses were not permitted.
 
 ---
 
-# Future Enhancements
+## Resolution
 
-Planned improvements include:
+Updated Azure
 
-- Additional branch office VPN connections
-- High-availability WireGuard gateways
-- Dynamic routing (BGP)
-- Microsoft Entra ID integration
-- AWS IAM Identity Center integration
-- Centralized VPN monitoring
-- Automated WireGuard deployment
-- Infrastructure as Code (Terraform)
+```
+AllowedIPs
+
+10.0.0.0/16
+10.2.0.0/16
+172.16.100.1/32
+172.16.100.3/32
+```
+
+Updated On-Premises
+
+```
+AllowedIPs
+
+10.0.0.0/16
+10.1.0.0/16
+172.16.100.1/32
+172.16.100.2/32
+```
+
+After updating the configuration and restarting WireGuard, full end-to-end connectivity between Azure and the on-premises environment was restored.
 
 ---
 
-# Summary
+# Lessons Learned
 
-The Enterprise Hybrid Cloud Platform implements a secure WireGuard hub-and-spoke VPN architecture connecting AWS, Azure, and an on-premises security lab.
+During implementation the following concepts were reinforced.
 
-AWS serves as the central VPN hub, enabling secure encrypted communication between environments while providing a scalable foundation for future enterprise services, application deployment, and cybersecurity testing.
+- WireGuard handshakes do not guarantee successful routing.
+- `AllowedIPs` functions as both a routing table and an access control list.
+- Linux IP forwarding must be enabled on VPN routers.
+- AWS EC2 Source/Destination Check must be disabled when acting as a router.
+- Packet captures with `tcpdump` are invaluable for diagnosing VPN routing issues.
+- A structured troubleshooting approach is more effective than changing multiple settings at once.
+
+---
+
+# Current Status
+
+| Component | Status |
+|-----------|--------|
+| AWS WireGuard Hub | Complete |
+| Azure WireGuard Spoke | Complete |
+| On-Premises WireGuard Spoke | Complete |
+| Site-to-Site VPN | Complete |
+| Hub-and-Spoke Routing | Complete |
+| Linux Routing | Complete |
+| End-to-End Connectivity | Complete |
+| VPN Validation | Complete |
+
+---
+
+# Future Improvements
+
+Future enhancements include
+
+- High Availability VPN gateways
+- Dynamic routing with BGP
+- Dual AWS VPN hubs
+- Azure VPN Gateway comparison
+- Infrastructure automation with Terraform
+- Automated deployment with Ansible
+- VPN monitoring using Prometheus and Grafana
