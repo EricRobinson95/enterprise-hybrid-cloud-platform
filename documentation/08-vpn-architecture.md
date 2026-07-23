@@ -1,4 +1,4 @@
-# 07 - VPN Architecture
+# 08 - VPN Architecture
 
 # Overview
 
@@ -28,24 +28,9 @@ The VPN architecture was designed to provide:
 
 # Enterprise VPN Topology
 
+![VPN-Architecture](../images/diagrams/vpn-architecture.png)
 ```
-                          Internet
-                              │
-                        Encrypted VPN
-                              │
-                     AWS WireGuard Hub
-                     172.16.100.1
-                              │
-          ┌───────────────────┴───────────────────┐
-          │                                       │
-          ▼                                       ▼
 
- Azure WireGuard Gateway              On-Premises WireGuard Gateway
-     172.16.100.2                          172.16.100.3
-
-        │                                        │
-   Azure Enterprise                     VMware Enterprise
-      10.1.0.0/16                           10.2.0.0/16
 ```
 
 AWS functions as the central routing hub.

@@ -28,22 +28,8 @@ Future responsibilities include:
 
 # AWS Architecture
 
-```
-                    Internet
-                        │
-                 Cloudflare DNS
-                        │
-                Internet Gateway
-                        │
-                 AWS VPC 10.0.0.0/16
-                        │
-               Ubuntu WireGuard Hub
-                        │
-         ┌──────────────┴──────────────┐
-         │                             │
-         ▼                             ▼
+![AWS-Network](../images/diagrams/aws-architecture.png)
 
- Azure Enterprise               On-Premises Enterprise
 ```
 
 AWS functions as the central networking hub for the hybrid cloud.

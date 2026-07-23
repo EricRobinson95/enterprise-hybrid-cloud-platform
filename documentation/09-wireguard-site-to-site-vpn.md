@@ -1,4 +1,4 @@
-# 08 - WireGuard Site-to-Site VPN
+# 09 - WireGuard Site-to-Site VPN
 
 # Overview
 

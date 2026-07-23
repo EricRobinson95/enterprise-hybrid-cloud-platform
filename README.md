@@ -32,32 +32,8 @@ This repository represents the completed infrastructure foundation for future en
 
 # Enterprise Architecture
 
-> *(Replace this section with your architecture diagram.)*
+![Enterprise Architecture](/images/diagrams/logical-diagram.png)
 
-```
-                              Internet
-                                  │
-                             Cloudflare DNS
-                                  │
-                                  ▼
-                     AWS Production Environment
-                      WireGuard VPN Hub
-                          10.0.0.0/16
-                               │
-              ┌────────────────┴────────────────┐
-              │                                 │
-              ▼                                 ▼
-
-      Azure Enterprise                 On-Premises Enterprise
-          10.1.0.0/16                       10.2.0.0/16
-
- Windows Server 2025                 VMware Workstation
- Active Directory                    Ubuntu WireGuard Gateway
- DNS                                 Windows 11 Enterprise
- Windows 11 Enterprise               Kali Linux
-```
-
----
 
 # Infrastructure Highlights
 
@@ -255,14 +231,16 @@ scripts/
 
 Complete technical documentation is included for every stage of the deployment.
 
-- Project Overview
+- Project Outline
 - Business Requirements
 - Network Architecture
 - IP Addressing
 - AWS Infrastructure
 - Azure Infrastructure
+- On-Premises-Infrastructure
 - VPN Architecture
 - WireGuard Implementation
+- CloudFlare
 - Active Directory
 - Security
 - Testing & Validation

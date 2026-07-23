@@ -11,27 +11,9 @@ Azure represents the organization's corporate datacenter while AWS hosts product
 ---
 
 # Azure Architecture
-
+![Azure-Network](../images/diagrams/azure-architecture.png)
 ```
-                 AWS WireGuard Hub
-                  172.16.100.1
-                         │
-          Encrypted WireGuard Tunnel
-                         │
-               Azure WireGuard Gateway
-                  172.16.100.2
-                         │
-              Azure Virtual Network
-                  10.1.0.0/16
-                         │
- ┌────────────────────────────────────────────┐
- │                                            │
- │ Gateway Subnet         10.1.1.0/24         │
- │ Identity Services      10.1.2.0/24         │
- │ Enterprise Clients     10.1.3.0/24         │
- │ Infrastructure         10.1.4.0/24         │
- │                                            │
- └────────────────────────────────────────────┘
+
 ```
 
 ---
