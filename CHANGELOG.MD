@@ -4,7 +4,7 @@
 
 ### Added
 
-- Hybrid AWS/Azure/On-Prem architecture
+- Hybrid AWS/Azure/On-Premises architecture
 - WireGuard hub-and-spoke VPN
 - Active Directory
 - Windows Server 2025
