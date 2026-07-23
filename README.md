@@ -1,146 +1,82 @@
 # Enterprise Hybrid Cloud Platform
 
-## Project Overview
+> **A production-style hybrid cloud infrastructure connecting AWS, Microsoft Azure, and an on-premises enterprise network through a secure WireGuard hub-and-spoke VPN.**
 
-This project demonstrates the design and implementation of a secure enterprise hybrid cloud environment connecting Amazon Web Services (AWS), Microsoft Azure, and an on-premises network using WireGuard VPN.
-
-The environment simulates a real-world enterprise network where cloud resources and on-premises infrastructure communicate securely over encrypted tunnels using a hub-and-spoke topology.
-
-The goal of this project is to showcase practical cloud networking, Linux administration, Windows Server administration, routing, VPN technologies, and infrastructure documentation.
+![Status](https://img.shields.io/badge/Status-Complete-success)
+![AWS](https://img.shields.io/badge/AWS-Deployed-orange)
+![Azure](https://img.shields.io/badge/Azure-Deployed-blue)
+![WireGuard](https://img.shields.io/badge/WireGuard-Operational-green)
+![Active%20Directory](https://img.shields.io/badge/Active%20Directory-Operational-success)
 
 ---
 
-## Architecture
+# Overview
+
+The **Enterprise Hybrid Cloud Platform** is a production-style infrastructure engineering project that demonstrates how modern organizations securely integrate **Amazon Web Services (AWS)**, **Microsoft Azure**, and **on-premises infrastructure** into a unified enterprise network.
+
+Rather than focusing on a single technology, this project combines enterprise networking, hybrid cloud architecture, Active Directory, Windows Server administration, Linux administration, VPN technologies, routing, and cybersecurity into one complete infrastructure.
+
+The completed environment provides:
+
+- Secure hybrid cloud networking
+- Centralized enterprise identity management
+- Cross-site authentication
+- Domain-joined Windows workstations
+- Enterprise DNS
+- Secure remote administration
+- Comprehensive infrastructure documentation
+
+This repository represents the completed infrastructure foundation for future enterprise automation, application hosting, and DevOps projects.
+
+---
+
+# Enterprise Architecture
+
+> *(Replace this section with your architecture diagram.)*
 
 ```
-                 Internet
-                     │
-                     │
-              AWS WireGuard Hub
-             (Ubuntu 26.04 LTS)
-              172.16.100.1
-                     │
-         ┌───────────┴───────────┐
-         │                       │
-         │                       │
-Azure WireGuard             On-Premises
-Ubuntu Gateway              WireGuard Gateway
-172.16.100.2                172.16.100.3
-         │                       │
-         │                       │
- Azure VNet               VMware Network
- 10.1.0.0/16              10.2.0.0/16
+                              Internet
+                                  │
+                             Cloudflare DNS
+                                  │
+                                  ▼
+                     AWS Production Environment
+                      WireGuard VPN Hub
+                          10.0.0.0/16
+                               │
+              ┌────────────────┴────────────────┐
+              │                                 │
+              ▼                                 ▼
+
+      Azure Enterprise                 On-Premises Enterprise
+          10.1.0.0/16                       10.2.0.0/16
+
+ Windows Server 2025                 VMware Workstation
+ Active Directory                    Ubuntu WireGuard Gateway
+ DNS                                 Windows 11 Enterprise
+ Windows 11 Enterprise               Kali Linux
 ```
 
 ---
 
-# Technologies Used
+# Infrastructure Highlights
 
-- Amazon Web Services (AWS)
-- Microsoft Azure
-- VMware Workstation Pro
-- Ubuntu Server 26.04 LTS
-- Windows Server 2025
-- WireGuard VPN
-- Linux Routing
-- iptables
-- TCPDump
-- SSH
-- PowerShell
-- Draw.io
-- Git
-- GitHub
+## Enterprise Networking
 
----
+Designed and implemented a secure hybrid cloud network connecting three independent environments.
 
-# Current Project Status
+### Features
 
-## Completed
+- WireGuard Hub-and-Spoke VPN
+- Site-to-Site VPN
+- Enterprise Routing
+- Static Routes
+- Linux Packet Forwarding
+- Network Segmentation
+- Cross-Site DNS Resolution
+- Cross-Site Authentication
 
-### AWS
-
-- AWS VPC deployment
-- Ubuntu WireGuard gateway
-- Security Groups configured
-- Source/Destination Check disabled
-- IP forwarding enabled
-- iptables forwarding configured
-- NAT configured
-- Static routing configured
-- SSH administration configured
-
----
-
-### Microsoft Azure
-
-- Azure Virtual Network
-- Ubuntu WireGuard gateway
-- User Defined Routes (UDRs)
-- Network Security Groups
-- Linux routing configured
-- WireGuard configured
-- End-to-end VPN connectivity verified
-
----
-
-### On-Premises
-
-- Ubuntu WireGuard gateway running in VMware
-- Static routing configured
-- Linux IP forwarding enabled
-- SSH enabled
-- VMware networking configured
-
----
-
-### Windows Infrastructure
-
-Completed:
-
-- Windows Server 2025 deployed in Azure
-- Active Directory Domain Services installed
-- Domain created
-- Organizational Units created
-- User accounts created
-- Security Groups created
-- User assigned to appropriate group
-
----
-
-### WireGuard VPN
-
-Successfully implemented a working Hub-and-Spoke VPN topology.
-
-Hub
-
-- AWS WireGuard Gateway
-
-Spokes
-
-- Azure WireGuard Gateway
-- On-Premises WireGuard Gateway
-
-Verified:
-
-- WireGuard handshakes
-- Site-to-site routing
-- End-to-end connectivity
-- Encrypted communication
-- Inter-site ICMP communication
-
----
-
-### Verification Completed
-
-Verified with:
-
-- ping
-- wg
-- ip route
-- tcpdump
-- SSH
-
-Connectivity verified between
+Validated connectivity between:
 
 - AWS ↔ Azure
 - AWS ↔ On-Premises
@@ -148,98 +84,158 @@ Connectivity verified between
 
 ---
 
-# Remaining Work
+## Active Directory
 
-## Azure
+Built a centralized enterprise identity platform hosted in Microsoft Azure.
 
-- Deploy Windows 11 Client
-- Join Windows 11 to Active Directory domain
-- Test Group Policy
-- Verify authentication
+### Implemented
 
----
-
-## On-Premises
-
-- Deploy Windows 11 Client
-- Join Windows 11 to Active Directory domain
-- Verify cross-site authentication
-- Verify DNS resolution
-- Test access across VPN
+- Windows Server 2025
+- Active Directory Domain Services
+- Enterprise DNS
+- Organizational Units
+- Security Groups
+- Administrative Accounts
+- Developer Accounts
+- Domain Authentication
 
 ---
 
-## Documentation
+## Enterprise Workstations
 
-Still to complete:
+Successfully deployed enterprise Windows clients.
 
-- Detailed deployment guide
-- WireGuard configuration guide
-- Active Directory documentation
-- Routing documentation
-- Troubleshooting guide
-- Network verification report
+### Completed
+
+- Azure Windows 11 Enterprise Workstation
+- On-Premises Windows 11 Enterprise Workstation
+- Domain Join
+- Cross-Site Authentication
+- Remote Desktop
+- Enterprise DNS
 
 ---
 
-# Skills Demonstrated
+## Linux Infrastructure
 
-## Cloud
+Configured Linux systems to operate as enterprise VPN routers.
 
-- AWS
-- Azure
-- Hybrid Cloud Networking
+### Implemented
 
-## Networking
+- Ubuntu Server
+- WireGuard
+- Linux Routing
+- IP Forwarding
+- iptables
+- SSH Administration
+- VPN Monitoring
+- Packet Capture
 
-- Routing
-- VPN
-- Hub-and-Spoke Design
-- Static Routes
-- Linux Networking
-- TCP/IP
-- SSH
+---
 
 ## Security
 
-- WireGuard VPN
-- Firewall Configuration
+Implemented multiple enterprise security controls.
+
+### Security Features
+
+- WireGuard Encryption
+- AWS Security Groups
+- Azure Network Security Groups
+- Windows Firewall
+- Least Privilege Access
+- Secure SSH Administration
+- Secure RDP Administration
 - Network Segmentation
-- Secure Remote Administration
-
-## Windows Administration
-
-- Active Directory
-- Organizational Units
-- Users
-- Groups
-- Windows Server 2025
-
-## Linux Administration
-
-- Ubuntu Server
-- IP Forwarding
-- iptables
-- Routing
-- SSH
-- WireGuard
-- TCPDump
 
 ---
 
-# Future Improvements
+# Technologies
 
-- High Availability WireGuard
-- BGP Dynamic Routing
-- DNS Integration
-- Azure Bastion
-- AWS Systems Manager
-- Monitoring
-- Grafana
-- Prometheus
-- Ansible Automation
-- Terraform Infrastructure as Code
-- CI/CD Deployment
+## Cloud
+
+- Amazon Web Services (AWS)
+- Microsoft Azure
+- Cloudflare
+
+## Networking
+
+- WireGuard
+- TCP/IP
+- Static Routing
+- Linux Routing
+- IP Forwarding
+- iptables
+
+## Operating Systems
+
+- Ubuntu Server 26.04 LTS
+- Windows Server 2025
+- Windows 11 Enterprise
+- Kali Linux
+
+## Identity
+
+- Active Directory Domain Services
+- DNS
+- Organizational Units
+- Security Groups
+
+## Administration
+
+- PowerShell
+- SSH
+- VMware Workstation Pro
+
+## Documentation
+
+- Draw.io
+- Git
+- GitHub
+
+---
+
+# Validation
+
+The infrastructure has been fully validated.
+
+## Networking
+
+- WireGuard Handshakes
+- VPN Routing
+- Static Routing
+- Cross-Site Connectivity
+- DNS Resolution
+- End-to-End Communication
+
+## Active Directory
+
+- Domain Creation
+- Organizational Units
+- User Accounts
+- Security Groups
+- Computer Objects
+- Domain Authentication
+
+## Enterprise Clients
+
+- Azure Windows 11 Domain Join
+- On-Premises Windows 11 Domain Join
+- Cross-Site Authentication
+- Remote Desktop
+- PowerShell Verification
+
+Validation was performed using:
+
+- ping
+- tracert
+- nslookup
+- wg
+- ip route
+- tcpdump
+- PowerShell
+- Active Directory Users and Computers
+- DNS Manager
 
 ---
 
@@ -255,12 +251,104 @@ scripts/
 
 ---
 
+# Documentation
+
+Complete technical documentation is included for every stage of the deployment.
+
+- Project Overview
+- Business Requirements
+- Network Architecture
+- IP Addressing
+- AWS Infrastructure
+- Azure Infrastructure
+- VPN Architecture
+- WireGuard Implementation
+- Active Directory
+- Security
+- Testing & Validation
+- Project Roadmap
+
+---
+
+# Skills Demonstrated
+
+### Cloud Engineering
+
+- Amazon Web Services
+- Microsoft Azure
+- Hybrid Cloud Architecture
+
+### Infrastructure Engineering
+
+- Enterprise Network Design
+- Hybrid Networking
+- Routing
+- VPN Technologies
+- Infrastructure Documentation
+
+### Windows Administration
+
+- Windows Server 2025
+- Active Directory
+- DNS
+- Windows 11 Enterprise
+- Enterprise Authentication
+
+### Linux Administration
+
+- Ubuntu Server
+- WireGuard
+- SSH
+- Routing
+- iptables
+- Packet Forwarding
+- Network Diagnostics
+
+### Cybersecurity
+
+- Secure Remote Administration
+- Network Segmentation
+- Defense in Depth
+- VPN Encryption
+- Firewall Configuration
+
+---
+
 # Project Outcome
 
-This project successfully demonstrates a production-style hybrid cloud environment connecting AWS, Azure, and an on-premises network through a secure WireGuard hub-and-spoke VPN.
+This project successfully demonstrates the deployment of a secure enterprise hybrid cloud infrastructure integrating **AWS**, **Microsoft Azure**, and an **on-premises VMware environment** into a single production-style network.
 
-The environment provides encrypted communication between all sites while showcasing practical enterprise networking, Linux administration, Windows Server administration, cloud networking, and infrastructure documentation.
+The completed implementation includes:
 
-Current Progress: **~90% Complete**
+- ✅ Enterprise hybrid cloud networking
+- ✅ WireGuard hub-and-spoke VPN
+- ✅ Cross-site routing
+- ✅ Windows Server 2025 Active Directory
+- ✅ Enterprise DNS
+- ✅ Domain-joined Windows 11 workstations
+- ✅ Cross-site authentication
+- ✅ Secure remote administration
+- ✅ Comprehensive technical documentation
 
-Remaining work consists primarily of deploying Windows 11 clients, joining them to the Active Directory domain, validating Group Policy and authentication across sites, and completing project documentation.
+This repository represents the completed infrastructure foundation for future infrastructure automation, enterprise application deployment, DevOps pipelines, and security engineering projects.
+
+---
+
+# Related Projects
+
+This repository is the first component of a larger enterprise portfolio.
+
+| Project | Purpose |
+|---------|---------|
+| **Enterprise Hybrid Cloud Platform** | Enterprise infrastructure foundation |
+| **Hybrid Infrastructure Manager** *(Next Project)* | Python automation for infrastructure operations |
+| **Enterprise Portfolio API** *(Future)* | FastAPI backend services |
+| **Enterprise Portfolio Web** *(Future)* | React frontend application |
+
+---
+
+## Author
+
+**Eric Robinson**
+
+Infrastructure • Cloud • Networking • Windows Server • Linux • Cybersecurity

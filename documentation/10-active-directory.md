@@ -2,11 +2,19 @@
 
 # Overview
 
-Microsoft Active Directory Domain Services (AD DS) provides centralized identity and access management for the Enterprise Hybrid Cloud Platform.
+Microsoft Active Directory Domain Services (AD DS) provides centralized identity, authentication, authorization, and DNS services for the Enterprise Hybrid Cloud Platform.
 
-The domain controller is hosted within Microsoft Azure and serves as the centralized authentication source for enterprise Windows systems located in both Azure and the on-premises VMware environment.
+The domain controller is hosted in Microsoft Azure and serves as the centralized identity provider for Windows systems located in both Azure and the on-premises VMware environment. Secure authentication and directory services are delivered across the hybrid infrastructure through the encrypted WireGuard hub-and-spoke VPN.
 
-The Active Directory environment provides centralized authentication, authorization, enterprise DNS, Organizational Unit (OU) management, security groups, and Windows domain services across the hybrid cloud using the WireGuard site-to-site VPN.
+The Active Directory deployment demonstrates enterprise identity management, organizational design, role-based administration, and secure cross-site authentication within a hybrid cloud environment.
+
+---
+
+# Business Purpose
+
+Active Directory was implemented to provide a centralized enterprise identity platform capable of managing users, computers, security groups, authentication, authorization, and DNS from a single location.
+
+The environment simulates a production enterprise where cloud and on-premises resources share the same authentication infrastructure while remaining connected through secure site-to-site VPN tunnels.
 
 ---
 
@@ -18,33 +26,34 @@ The Active Directory deployment provides:
 - Centralized authorization
 - Enterprise DNS
 - Domain-joined Windows workstations
-- Organizational Unit management
+- Organizational Unit (OU) administration
 - Security Group management
 - Cross-site authentication
 - Hybrid identity management
 - Enterprise Windows administration
+- Secure administrative delegation
 
 ---
 
 # Enterprise Identity Architecture
 
 ```
-                    Azure Virtual Network
-                       10.1.0.0/16
-                              │
-                     Windows Server 2025
-                 Active Directory Domain Services
-                              │
-              corp.ericrobinsonjr.com
-                              │
-             ┌────────────────┴────────────────┐
-             │                                 │
+                     Azure Virtual Network
+                        10.1.0.0/16
+                               │
+                        Windows Server 2025
+                   Active Directory Domain Services
+                               │
+                  corp.ericrobinsonjr.com
+                               │
+          ┌────────────────────┴────────────────────┐
+          │                                         │
 
- Azure Windows 11                 On-Premises Windows 11
- Domain Joined                    Domain Joined
+ Azure Windows 11                        On-Premises Windows 11
+ Administrative Workstation              Developer Workstation
 
-           Authentication traverses the
-         encrypted WireGuard Site-to-Site VPN
+           Authentication traverses the encrypted
+           WireGuard Site-to-Site VPN Infrastructure
 ```
 
 ---
@@ -53,41 +62,92 @@ The Active Directory deployment provides:
 
 | Property | Value |
 |----------|-------|
-| Operating System | Windows Server 2025 |
 | Hostname | AZ-DC01 |
+| Operating System | Windows Server 2025 |
+| Environment | Microsoft Azure |
 | Domain | corp.ericrobinsonjr.com |
 | NetBIOS Name | CORP |
-| Environment | Microsoft Azure |
-| IP Address | 10.1.2.4 |
+| Private IP Address | 10.1.2.4 |
+| Primary Roles | Active Directory Domain Services, DNS |
 
 ---
 
-# Installed Roles
+# Installed Server Roles
 
 Current Roles
 
 - Active Directory Domain Services
 - DNS Server
 
-Future Roles
+Planned Enterprise Roles
 
 - File Services
 - Group Policy Management
 - Windows Server Backup
+- Active Directory Certificate Services (Future)
 
 ---
 
-# Active Directory Structure
+# Active Directory Organizational Structure
 
-The Active Directory environment currently contains:
+The directory structure has been organized using enterprise administrative best practices.
 
-- Domain
-- Organizational Units
-- Enterprise Users
-- Security Groups
-- Computer Objects
+```
+corp.ericrobinsonjr.com
 
-The directory structure has been organized using enterprise best practices to simplify administration and future expansion.
+├── Administration
+├── Employees
+│   ├── Developers
+│   ├── HR
+│   ├── IT
+│   └── Management
+│
+├── Groups
+├── Security
+├── Servers
+├── Service Accounts
+└── Workstations
+```
+
+This organizational structure separates users, computers, security objects, and infrastructure resources to simplify administration and future scalability.
+
+---
+
+# Enterprise User Accounts
+
+The environment currently contains dedicated administrative and development identities.
+
+## Administrative Account
+
+```
+Eric.Admin
+```
+
+Responsibilities
+
+- Domain Administration
+- Active Directory Administration
+- Windows Server Administration
+- Azure Infrastructure Administration
+- Enterprise Infrastructure Management
+
+---
+
+## Developer Account
+
+```
+Eric.Developer
+```
+
+Responsibilities
+
+- Software Development
+- Application Development
+- Source Code Management
+- Enterprise Development Workstation
+- Future React / FastAPI Development
+
+Separating administrative and development accounts demonstrates the principle of least privilege by isolating privileged administrative activities from daily development tasks.
 
 ---
 
@@ -97,6 +157,7 @@ Current Organizational Units
 
 ```
 Employees
+│
 ├── Developers
 ├── HR
 ├── IT
@@ -108,201 +169,173 @@ Workstations
 
 Groups
 
+Security
+
 Service Accounts
 ```
 
-This structure separates users, computers, and infrastructure resources into dedicated administrative containers.
-
----
-
-# Enterprise Users
-
-Current implementation includes:
-
-- Azure Administrator
-- Enterprise Developer Account
-
-Example Accounts
-
-```
-azureadmin
-
-EricRobinson95
-```
-
-Enterprise users authenticate directly against Active Directory.
+The OU hierarchy supports delegated administration, Group Policy application, and future enterprise expansion.
 
 ---
 
 # Security Groups
 
-Current implementation includes:
+Current Security Groups include:
 
-- Administrative Security Group
-
-Future groups include:
-
-- Help Desk
-- Network Administrators
-- Server Administrators
 - Developers
-- Security Operations
+- Management
+- FileServer-Users
+- RemoteDesktop-Users
 
-Security Groups simplify permission management across enterprise resources.
+Built-in Active Directory groups continue to provide domain administration and authentication services.
+
+Security groups simplify permission management while supporting role-based access control (RBAC).
 
 ---
 
-# Computer Objects
+# Enterprise Computers
 
-Current computer objects include:
+Current domain-joined systems include:
 
 ```
 AZ-DC01
 
+AZ-WIN11-01
+
 ONPREM-WIN11-01
 ```
 
-The on-premises Windows 11 workstation has successfully joined the Active Directory domain and has been moved into the dedicated **Workstations** Organizational Unit following enterprise best practices.
+Windows workstations have been organized within the Workstations Organizational Unit according to enterprise administrative best practices.
 
 ---
 
 # Enterprise DNS
 
-Windows Server 2025 provides centralized DNS services.
+Windows Server 2025 provides integrated Active Directory DNS services.
 
-Responsibilities
+Responsibilities include:
 
-- Active Directory DNS
-- Internal Name Resolution
-- Cross-site DNS Resolution
-
-Current validation includes:
-
-- Domain lookups
-- Forward lookups
-- Client authentication
-- Name resolution across the WireGuard VPN
+- Active Directory-integrated DNS
+- Internal name resolution
+- Cross-site DNS resolution
+- Domain controller discovery
+- Hybrid enterprise name resolution
 
 ---
 
 # Hybrid Authentication
 
-The Active Directory domain controller authenticates Windows systems located in multiple enterprise environments.
+Windows systems authenticate directly against the Azure-hosted domain controller regardless of physical location.
 
-Connected Locations
+Supported authentication locations include:
 
-- Azure
-- On-Premises
+- Microsoft Azure
+- On-Premises VMware
 
-Authentication is securely transported across the encrypted WireGuard site-to-site VPN.
+Authentication traffic traverses the encrypted WireGuard VPN while Kerberos and DNS remain fully functional across the hybrid environment.
 
 ---
 
-# Windows Enterprise Workstations
+# Enterprise Workstations
 
-## Azure
-
-Current
-
-- Windows 11 Enterprise
-- Domain Joined
+## Azure Administrative Workstation
 
 Purpose
 
-- Administrative Workstation
-- Enterprise Management
+- Infrastructure Administration
+- Windows Server Administration
+- Azure Administration
+- Active Directory Management
+
+Primary User
+
+```
+Eric.Admin
+```
 
 ---
 
-## On-Premises
-
-Current
-
-- Windows 11 Enterprise
-- Domain Joined
+## On-Premises Developer Workstation
 
 Purpose
 
-- Developer Workstation
-- Hybrid Authentication
-- Enterprise Resource Access
+- Software Development
+- Source Code Management
+- Future React Development
+- Future FastAPI Development
 
-The workstation authenticates against the Azure-hosted domain controller through the WireGuard VPN.
+Primary User
+
+```
+Eric.Developer
+```
+
+The developer workstation authenticates against the Azure-hosted domain controller through the WireGuard VPN.
 
 ---
 
-# Authentication Process
+# Authentication Workflow
 
 ```
 Windows 11 Workstation
 
-↓
+        │
 
 DNS Resolution
 
-↓
+        │
 
 Domain Controller (AZ-DC01)
 
-↓
+        │
 
 Kerberos Authentication
 
-↓
+        │
 
-Domain Login
+Domain Logon
 
-↓
+        │
 
 Enterprise Resource Access
 ```
 
 ---
 
-# Enterprise DNS Flow
+# DNS Resolution Workflow
 
 ```
-Windows 11
+Windows Client
 
-↓
+        │
 
 DNS Query
 
-↓
+        │
 
 Windows Server 2025
 
-↓
+        │
 
 Active Directory DNS
 
-↓
+        │
 
-Response Returned
+DNS Response
 ```
 
-The on-premises workstation resolves enterprise DNS records through the encrypted VPN.
+Cross-site DNS queries are securely transported across the WireGuard VPN.
 
 ---
 
 # Validation
 
-The Active Directory deployment has been fully validated.
+## Active Directory
 
-## Infrastructure
+Validated
 
-Verified
-
-- Windows Server 2025
-- Active Directory Domain Services
-- DNS Installation
-
----
-
-## Directory Services
-
-Verified
-
+- Active Directory Domain Services Installation
+- Forest Creation
 - Domain Creation
 - Organizational Units
 - Enterprise Users
@@ -313,7 +346,6 @@ Verification
 
 ```powershell
 Get-ADUser
-
 Get-ADComputer
 ```
 
@@ -321,11 +353,11 @@ Get-ADComputer
 
 ## Authentication
 
-Verified
+Validated
 
-- Azure Administrator Login
-- Developer Login
-- Cross-site Domain Authentication
+- Eric.Admin login
+- Eric.Developer login
+- Cross-site authentication
 
 Verification
 
@@ -333,22 +365,23 @@ Verification
 whoami
 ```
 
-Example
+Example Output
 
 ```
-corp\azureadmin
+corp\eric.admin
 
-corp\ericrobinson95
+corp\eric.developer
 ```
 
 ---
 
 ## DNS
 
-Verified
+Validated
 
 - Internal DNS
-- Cross-site Name Resolution
+- Domain Resolution
+- Cross-site DNS Queries
 
 Verification
 
@@ -360,7 +393,7 @@ nslookup
 
 ## Domain Join
 
-Verified
+Validated
 
 - Azure Windows 11
 - On-Premises Windows 11
@@ -368,27 +401,27 @@ Verified
 Verification
 
 ```powershell
-systeminfo
-
 hostname
+
+systeminfo
 ```
 
 ---
 
-# Current Infrastructure
+# Current Infrastructure Status
 
 | Component | Status |
 |-----------|--------|
 | Windows Server 2025 | Complete |
 | Active Directory Domain Services | Complete |
 | DNS Server | Complete |
-| Domain | Complete |
+| Enterprise Domain | Complete |
 | Organizational Units | Complete |
 | Enterprise Users | Complete |
 | Security Groups | Complete |
 | Computer Objects | Complete |
-| Azure Windows 11 Domain Join | Complete |
-| On-Premises Windows 11 Domain Join | Complete |
+| Azure Administrative Workstation | Complete |
+| On-Premises Developer Workstation | Complete |
 | Cross-site Authentication | Complete |
 | Cross-site DNS Resolution | Complete |
 
@@ -396,17 +429,16 @@ hostname
 
 # Future Enhancements
 
-Planned improvements include:
+Planned enterprise improvements include:
 
 - Group Policy Objects (GPOs)
-- Windows File Server
-- Roaming Profiles
+- Enterprise File Server
 - Folder Redirection
+- Roaming Profiles
+- Active Directory Certificate Services (AD CS)
 - Microsoft Entra ID Integration
 - Microsoft Entra Connect
-- Active Directory Certificate Services (AD CS)
 - Fine-Grained Password Policies
-- Read-Only Domain Controller (RODC)
 - Windows Admin Center
 - Desired State Configuration (DSC)
 
@@ -414,21 +446,21 @@ Planned improvements include:
 
 # Lessons Learned
 
-The Active Directory deployment reinforced several enterprise concepts:
+This deployment reinforced several enterprise concepts:
 
-- Active Directory depends on reliable DNS.
-- Secure routing is required for cross-site authentication.
-- Domain-joined workstations should be organized into dedicated Organizational Units.
-- Security Groups simplify permission management.
-- Cross-site authentication requires functional VPN connectivity and routing.
-- Enterprise identity services can be successfully hosted in Azure while authenticating on-premises systems.
+- Active Directory is dependent on reliable DNS.
+- Hybrid authentication requires secure Layer 3 connectivity.
+- Organizational Units simplify administration and policy management.
+- Security Groups provide scalable role-based access control.
+- VPN routing directly impacts Kerberos and DNS functionality.
+- Administrative and development accounts should remain separate to support least-privilege administration.
 
 ---
 
 # Summary
 
-Microsoft Active Directory Domain Services provides centralized identity management for the Enterprise Hybrid Cloud Platform.
+Microsoft Active Directory Domain Services provides the centralized identity platform for the Enterprise Hybrid Cloud Platform.
 
-The completed deployment includes Windows Server 2025, Active Directory Domain Services, enterprise DNS, Organizational Units, security groups, enterprise user accounts, computer objects, and domain-joined Windows 11 workstations located in both Azure and the on-premises enterprise environment.
+The completed deployment includes Windows Server 2025, Active Directory Domain Services, enterprise DNS, Organizational Units, security groups, dedicated administrative and development accounts, domain-joined Windows 11 workstations, and secure hybrid authentication across Microsoft Azure and an on-premises VMware environment.
 
-Cross-site authentication and DNS resolution have been successfully validated across the encrypted WireGuard site-to-site VPN, providing a production-style enterprise identity platform that supports centralized administration, hybrid cloud networking, and future enterprise services.
+Cross-site authentication, DNS resolution, and domain services have been successfully validated through the encrypted WireGuard hub-and-spoke VPN, demonstrating a production-style enterprise identity infrastructure capable of supporting future application hosting, infrastructure automation, and enterprise services.
