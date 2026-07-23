@@ -1,51 +1,72 @@
-# VPN Architecture
+# 07 - VPN Architecture
 
-## Overview
+# Overview
 
-The Enterprise Hybrid Cloud Platform uses a hub-and-spoke Virtual Private Network (VPN) architecture to securely connect Amazon Web Services (AWS), Microsoft Azure, and an on-premises VMware environment.
+The Enterprise Hybrid Cloud Platform uses a production-style WireGuard hub-and-spoke Virtual Private Network (VPN) architecture to securely connect Amazon Web Services (AWS), Microsoft Azure, and an on-premises VMware enterprise environment.
 
-The VPN establishes encrypted communication between all three environments, allowing cloud resources and on-premises infrastructure to operate as a single enterprise network while traversing the public Internet securely.
+The VPN provides encrypted Layer 3 connectivity between all enterprise locations, allowing cloud resources and on-premises infrastructure to communicate as a single private network while traversing the public Internet securely.
 
-Rather than creating direct VPN tunnels between every site, the environment uses a centralized hub-and-spoke topology. AWS serves as the VPN hub while Azure and the on-premises environment function as spokes.
+AWS functions as the central VPN hub while Azure and the on-premises enterprise environment operate as spoke sites.
 
 ---
 
 # Design Objectives
 
-The VPN architecture was designed to achieve the following objectives.
+The VPN architecture was designed to provide:
 
-- Secure communication between cloud providers
-- Secure connectivity to the on-premises environment
-- Centralized routing
-- Reduced administrative complexity
-- Simplified network expansion
+- Secure hybrid cloud connectivity
 - Encrypted site-to-site communication
+- Centralized enterprise routing
 - Secure remote administration
 - Enterprise scalability
+- Simplified network management
+- Secure Active Directory communication
+- Cross-site authentication
+- Cross-site DNS resolution
 
 ---
 
-# VPN Topology
+# Enterprise VPN Topology
 
 ```
-                 Azure
-                   │
-                   │
-              VPN Tunnel
-                   │
-                   │
-             AWS VPN Hub
-                   │
-                   │
-              VPN Tunnel
-                   │
-                   │
-            On-Premises
+                          Internet
+                              │
+                        Encrypted VPN
+                              │
+                     AWS WireGuard Hub
+                     172.16.100.1
+                              │
+          ┌───────────────────┴───────────────────┐
+          │                                       │
+          ▼                                       ▼
+
+ Azure WireGuard Gateway              On-Premises WireGuard Gateway
+     172.16.100.2                          172.16.100.3
+
+        │                                        │
+   Azure Enterprise                     VMware Enterprise
+      10.1.0.0/16                           10.2.0.0/16
 ```
 
-AWS acts as the central routing point for all VPN traffic.
+AWS functions as the central routing hub.
 
-Azure and the on-premises environment do not establish a direct VPN tunnel. All communication between the spoke sites traverses the AWS hub.
+Azure and the on-premises environment never establish a direct VPN tunnel. All communication between the spoke sites traverses the AWS WireGuard gateway.
+
+---
+
+# WireGuard Tunnel Network
+
+Tunnel Network
+
+```
+172.16.100.0/24
+```
+
+| Gateway | Tunnel Address |
+|----------|----------------|
+| AWS Hub | 172.16.100.1 |
+| Azure Gateway | 172.16.100.2 |
+| On-Premises Gateway | 172.16.100.3 |
 
 ---
 
@@ -53,155 +74,403 @@ Azure and the on-premises environment do not establish a direct VPN tunnel. All 
 
 A hub-and-spoke architecture was selected instead of a full mesh VPN.
 
-### Advantages
+Benefits include:
 
 - Centralized routing
 - Simplified VPN management
 - Fewer VPN tunnels
 - Easier troubleshooting
 - Lower administrative overhead
-- Scalable architecture
+- Simplified expansion
 - Consistent security policies
 
-As additional cloud providers or branch offices are added, only a single VPN connection to the AWS hub is required.
+New enterprise locations require only a single VPN connection to the AWS hub.
 
 ---
 
-# AWS as the Hub
+# AWS VPN Hub
 
-AWS hosts the public-facing application infrastructure for the Enterprise Hybrid Cloud Platform.
+AWS serves as the central routing point for all enterprise VPN traffic.
 
-Placing the VPN hub within AWS allows Azure identity services and the on-premises environment to securely access cloud-hosted resources through a centralized gateway.
+Current Responsibilities
 
-The AWS hub is responsible for forwarding traffic between all connected networks while maintaining encrypted communication across the VPN.
+- WireGuard Hub
+- VPN Termination
+- Linux IP Forwarding
+- Static Routing
+- Inter-site Packet Routing
 
----
+Interfaces
 
-# Azure as a Spoke
+| Interface | Address |
+|----------|---------|
+| eth0 | 10.0.1.40 |
+| wg0 | 172.16.100.1 |
 
-Azure provides enterprise identity and infrastructure services.
+Remote Networks
 
-Current services include
-
-- Active Directory Domain Services
-- DNS
-- Identity Management
-
-Future services include
-
-- Windows File Server
-- Internal Application Server
-- Windows 11 Enterprise Client
-
-Azure securely communicates with AWS and the on-premises environment through the VPN hub.
+```
+10.1.0.0/16
+10.2.0.0/16
+```
 
 ---
 
-# On-Premises as a Spoke
+# Azure VPN Gateway
 
-The on-premises environment represents a traditional enterprise office or data center.
+Azure operates as a WireGuard spoke.
 
-Current resources include
+Interfaces
 
-- Ubuntu WireGuard Gateway
-- VMware Infrastructure
-- Kali Linux Security Workstation
+| Interface | Address |
+|----------|---------|
+| eth0 | 10.1.1.4 |
+| wg0 | 172.16.100.2 |
 
-Future resources include
+Responsibilities
 
-- Windows 11 Enterprise Client
+- VPN Termination
+- Linux Routing
+- IP Forwarding
+- Secure Enterprise Connectivity
 
-The on-premises environment securely accesses cloud resources through the AWS VPN hub.
+Advertised Network
+
+```
+10.1.0.0/16
+```
+
+Allowed Networks
+
+```
+10.0.0.0/16
+10.2.0.0/16
+```
+
+Persistent Keepalive
+
+```
+25 Seconds
+```
+
+---
+
+# On-Premises VPN Gateway
+
+The on-premises Ubuntu server operates as a WireGuard spoke.
+
+Interfaces
+
+| Interface | Address |
+|----------|---------|
+| eth0 | 10.2.1.12 |
+| wg0 | 172.16.100.3 |
+
+Responsibilities
+
+- VPN Gateway
+- Linux Routing
+- Secure SSH Administration
+
+Advertised Network
+
+```
+10.2.0.0/16
+```
+
+Allowed Networks
+
+```
+10.0.0.0/16
+10.1.0.0/16
+```
+
+Persistent Keepalive
+
+```
+25 Seconds
+```
+
+---
+
+# Enterprise Routing
+
+The VPN relies on static routing across all enterprise environments.
+
+## AWS
+
+Routing Components
+
+- AWS Route Tables
+- Linux Routing
+- WireGuard
+
+Routes
+
+```
+10.1.0.0/16
+10.2.0.0/16
+```
+
+---
+
+## Azure
+
+Routing Components
+
+- Azure User Defined Routes
+- Linux Routing
+- WireGuard
+
+Routes
+
+```
+10.0.0.0/16
+10.2.0.0/16
+```
+
+The Azure route table is associated with both the Gateway Subnet and the Identity Services Subnet to enable communication between Azure resources and remote enterprise networks.
+
+---
+
+## On-Premises
+
+Routing Components
+
+- Linux Static Routes
+- Windows Persistent Routes
+- WireGuard
+
+Routes
+
+```
+10.0.0.0/16
+10.1.0.0/16
+```
 
 ---
 
 # Security Architecture
 
-The VPN provides secure communication between all connected environments.
+WireGuard provides encrypted communication between all enterprise locations.
 
-Security objectives include
+Security objectives include:
 
 - Confidentiality
 - Integrity
-- Authentication
-- Secure key exchange
-- Protection of internal traffic across the public Internet
+- Mutual Authentication
+- Secure Key Exchange
+- Private Enterprise Networking
 
-Administrative access to cloud resources is performed using secure SSH connections.
+Administrative access is performed using secure SSH and Remote Desktop connections.
 
 ---
 
-# Traffic Flow
+# Enterprise Traffic Flow
 
-The VPN supports communication between
+The VPN supports secure communication between:
 
-- AWS and Azure
-- AWS and On-Premises
-- Azure and On-Premises
+- AWS ↔ Azure
+- AWS ↔ On-Premises
+- Azure ↔ On-Premises
 
-Traffic between Azure and the on-premises environment is routed through the AWS hub.
+Azure-to-On-Premises traffic follows this path:
 
-This centralized routing model simplifies administration while maintaining secure communication between all enterprise locations.
+```
+Azure
+
+↓
+
+Azure WireGuard Gateway
+
+↓
+
+AWS WireGuard Hub
+
+↓
+
+On-Premises WireGuard Gateway
+
+↓
+
+Destination Host
+```
+
+This centralized routing model simplifies network administration while maintaining encrypted communication between all enterprise locations.
 
 ---
 
 # Scalability
 
-The hub-and-spoke architecture allows additional environments to be integrated with minimal changes.
-
-Examples include
+The hub-and-spoke architecture supports future expansion including:
 
 - Additional AWS Regions
 - Additional Azure Regions
 - Branch Offices
-- Remote Users
+- Remote Employees
 - Disaster Recovery Sites
 - Additional Cloud Providers
 
-Each new environment requires only a single VPN connection to the AWS hub.
+Each new location requires only a single VPN connection to the AWS hub.
 
 ---
 
 # High Availability
 
-The current implementation uses a single VPN hub located in AWS.
+The current implementation uses a single WireGuard hub hosted in AWS.
 
-Future enhancements may include
+Future enhancements may include:
 
-- Redundant VPN gateways
-- Multi-region deployment
-- Automatic failover
-- Dynamic routing protocols
-- High availability cloud networking
+- Redundant VPN Gateways
+- Multi-Region Deployment
+- Automatic Failover
+- Dynamic Routing Protocols
+- High Availability Networking
 
 ---
 
-# Benefits
+# Validation
 
-The selected architecture provides
+The VPN architecture has been fully validated.
 
-- Secure hybrid cloud networking
-- Centralized VPN management
-- Reduced operational complexity
-- Enterprise scalability
-- Secure cloud integration
-- Simplified network administration
-- Secure communication across public networks
+## WireGuard
+
+Verified
+
+- Tunnel Handshakes
+- Peer Status
+- Tunnel Interfaces
+
+Verification
+
+```
+wg
+```
+
+---
+
+## Routing
+
+Verified
+
+- AWS Route Tables
+- Azure User Defined Routes
+- Linux Static Routes
+- Windows Persistent Routes
+
+Verification
+
+```
+ip route
+route print
+```
+
+---
+
+## Connectivity
+
+Verified
+
+- AWS ↔ Azure
+- AWS ↔ On-Premises
+- Azure ↔ On-Premises
+
+Verification
+
+```
+ping
+```
+
+---
+
+## Route Validation
+
+Verified
+
+```
+tracert
+```
+
+---
+
+## DNS
+
+Verified
+
+- Cross-site DNS Resolution
+
+Verification
+
+```
+nslookup
+```
+
+---
+
+## Active Directory
+
+Verified
+
+- Cross-site Domain Authentication
+- Domain-Joined Windows Workstations
+
+Verification
+
+```
+whoami
+Get-ADUser
+Get-ADComputer
+```
 
 ---
 
 # Current Status
 
-The VPN architecture has been successfully implemented.
+## Completed
 
-Completed
+### VPN
 
-- AWS VPN Hub
-- Azure VPN Spoke
-- On-Premises VPN Spoke
+- WireGuard Hub
+- Azure WireGuard Spoke
+- On-Premises WireGuard Spoke
 - Hub-and-Spoke Topology
-- Secure Site-to-Site Connectivity
-- Cross-Site Routing
-- End-to-End Communication
+- Site-to-Site VPN
 
-The VPN architecture now provides secure communication between AWS, Azure, and the on-premises environment and serves as the networking foundation for the remainder of the Enterprise Hybrid Cloud Platform.
+### Routing
+
+- AWS Route Tables
+- Azure User Defined Routes
+- Linux Routing
+- Windows Persistent Routes
+- Linux IP Forwarding
+- Cross-Site Routing
+
+### Validation
+
+- WireGuard Handshakes
+- ICMP Testing
+- Route Validation
+- DNS Resolution
+- Active Directory Authentication
+- SSH Administration
+
+---
+
+# Future Enhancements
+
+Planned improvements include:
+
+- Dynamic Routing (BGP)
+- High Availability VPN
+- Multi-Region Deployment
+- VPN Monitoring
+- Infrastructure as Code (Terraform)
+- Automated Configuration Management
+
+---
+
+# Summary
+
+The Enterprise Hybrid Cloud Platform implements a production-style WireGuard hub-and-spoke VPN architecture that securely integrates AWS, Microsoft Azure, and an on-premises enterprise environment into a single private network.
+
+The completed implementation includes encrypted site-to-site connectivity, enterprise routing, Linux IP forwarding, Azure User Defined Routes, Windows persistent routes, cross-site DNS resolution, Active Directory authentication, and validated communication between every environment. This VPN infrastructure provides the secure networking foundation for enterprise identity services, application hosting, DevOps automation, and future production workloads.

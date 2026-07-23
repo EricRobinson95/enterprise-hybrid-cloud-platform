@@ -2,26 +2,27 @@
 
 # Overview
 
-The Enterprise Hybrid Cloud Platform is designed to simulate the IT infrastructure of a modern organization operating across multiple environments.
+The Enterprise Hybrid Cloud Platform is designed to simulate the infrastructure of a modern organization operating across multiple cloud providers and an on-premises enterprise environment.
 
-The solution provides a secure, scalable, and maintainable hybrid cloud architecture by leveraging Amazon Web Services (AWS), Microsoft Azure, and an on-premises security lab.
+The solution integrates Amazon Web Services (AWS), Microsoft Azure, and VMware-hosted infrastructure into a secure hybrid cloud architecture connected through a WireGuard hub-and-spoke VPN.
 
-The platform demonstrates how enterprise identity management, application development, production hosting, DevOps, and cybersecurity can operate together within a single infrastructure.
+The platform demonstrates enterprise networking, centralized identity management, Windows administration, Linux administration, cloud infrastructure, DevOps, and cybersecurity using production-style technologies and deployment practices.
 
 ---
 
-# Business Objectives
+# Business Goals
 
-The platform must:
+The platform is designed to:
 
 - Provide secure hybrid cloud connectivity
-- Host a production-ready web application
 - Centralize enterprise identity management
-- Provide a standardized development environment
-- Automate application deployment
-- Enable security testing from an isolated environment
+- Support enterprise Windows workstations
+- Host production workloads
+- Separate production, corporate IT, and security operations
+- Enable secure remote administration
+- Support future application deployment
 - Demonstrate enterprise networking best practices
-- Maintain comprehensive documentation
+- Maintain comprehensive technical documentation
 
 ---
 
@@ -29,15 +30,16 @@ The platform must:
 
 Modern organizations require infrastructure that can:
 
-- Scale with business growth
-- Secure corporate resources
-- Support remote development
-- Separate production from corporate IT
-- Protect customer data
-- Enable continuous software delivery
-- Reduce operational risk
+- Support hybrid cloud deployments
+- Centralize user authentication
+- Protect business resources
+- Enable secure remote access
+- Support software development
+- Isolate production from security testing
+- Scale as business requirements grow
+- Reduce operational complexity
 
-This project was designed to demonstrate these enterprise capabilities using industry-standard technologies.
+This project demonstrates these enterprise capabilities using industry-standard technologies.
 
 ---
 
@@ -45,116 +47,177 @@ This project was designed to demonstrate these enterprise capabilities using ind
 
 ## BR-01 Hybrid Cloud Infrastructure
 
-The organization shall maintain a hybrid cloud infrastructure consisting of:
+The organization shall maintain three interconnected enterprise environments.
 
-- Amazon Web Services
-- Microsoft Azure
-- On-Premises Infrastructure
+### AWS Production
 
-Each environment shall provide a dedicated business function.
+Responsible for hosting production infrastructure.
 
----
+### Azure Enterprise
 
-## BR-02 Production Environment
+Responsible for enterprise identity and corporate services.
 
-AWS shall host all customer-facing services.
+### On-Premises Enterprise Lab
 
-Production services include:
-
-- Web Application
-- REST API
-- Database
-- Load Balancer
-- Cloud Storage
-- Monitoring
-
-AWS shall also function as the central WireGuard VPN hub.
+Responsible for workstation management, remote administration, and security operations.
 
 ---
 
-## BR-03 Corporate IT Environment
+## BR-02 Secure Hybrid Connectivity
 
-Azure shall provide enterprise IT services.
+All enterprise environments shall communicate using encrypted WireGuard VPN tunnels.
 
-Services include:
-
-- Active Directory Domain Services
-- DNS
-- Group Policy
-- Windows File Services
-- Internal Application Services
-- Windows 11 Developer Workstation
-
-Azure shall provide centralized identity management for employees.
-
----
-
-## BR-04 Security Operations
-
-The on-premises environment shall function as the organization's security operations lab.
-
-Responsibilities include:
-
-- Vulnerability Assessments
-- Penetration Testing
-- Application Validation
-- Network Analysis
-- Security Testing
-
-Security activities shall only be performed against systems owned and managed within this project.
-
----
-
-## BR-05 Secure Site-to-Site Connectivity
-
-All environments shall communicate using encrypted WireGuard VPN tunnels.
-
-Requirements
+Requirements include:
 
 - Hub-and-spoke topology
 - AWS VPN hub
-- Encrypted communication
-- Static routing
+- Azure VPN spoke
+- On-premises VPN spoke
 - Linux IP forwarding
+- Static routing
+- Encrypted communication
 
 ---
 
-## BR-06 Developer Environment
+## BR-03 Enterprise Routing
 
-Developers shall use a managed Windows 11 workstation hosted within Azure.
+The platform shall provide full Layer 3 connectivity between enterprise environments.
 
-The workstation shall:
+The solution shall include:
 
-- Join the Active Directory domain
-- Use standardized development tools
-- Support remote administration
-- Provide secure access to development resources
+- AWS Route Tables
+- Azure User Defined Routes (UDRs)
+- Linux packet forwarding
+- Windows persistent routes
+- End-to-end route validation
+
+All enterprise networks shall communicate without requiring public internet routing.
 
 ---
 
-## BR-07 Identity Management
+## BR-04 Corporate Identity Services
 
-Employee identities shall be centrally managed using Active Directory.
+Azure shall provide centralized identity management.
 
-The environment shall support:
+Current services include:
 
-- User Accounts
+- Windows Server 2025
+- Active Directory Domain Services
+- DNS
 - Organizational Units
 - Security Groups
+- Enterprise User Accounts
+
+Future services include:
+
 - Group Policy
-- Authentication
-- Authorization
-
-Example users
-
-- Eric.Admin
-- John.Developer
+- File Services
+- Internal Application Services
 
 ---
 
-## BR-08 Production Application
+## BR-05 Enterprise Workstations
 
-The platform shall support deployment of a production-ready web application.
+Enterprise Windows 11 workstations shall be managed through Active Directory.
+
+Requirements include:
+
+- Domain join
+- Active Directory authentication
+- Enterprise DNS
+- Cross-site authentication
+- Remote administration
+- Standardized development environment
+
+---
+
+## BR-06 Production Cloud Environment
+
+AWS shall host customer-facing production services.
+
+Current responsibilities include:
+
+- WireGuard VPN Hub
+- Enterprise Routing
+- Linux Gateway
+- Secure Connectivity
+
+Future responsibilities include:
+
+- React Frontend
+- FastAPI Backend
+- PostgreSQL
+- Amazon ECS
+- Application Load Balancer
+- Amazon S3
+- CloudWatch
+
+---
+
+## BR-07 Security Operations
+
+The on-premises environment shall function as the enterprise security operations lab.
+
+Responsibilities include:
+
+- Vulnerability Assessment
+- Penetration Testing
+- Application Validation
+- Packet Analysis
+- Network Troubleshooting
+- Security Verification
+
+Security testing shall only be performed against systems owned and managed within this project.
+
+---
+
+## BR-08 Software Development
+
+Software development shall occur from enterprise-managed Windows workstations.
+
+Development tools include:
+
+- Visual Studio Code
+- Git
+- GitHub
+- Python
+- Node.js
+
+Future development includes:
+
+- React
+- FastAPI
+- Docker
+
+---
+
+## BR-09 Continuous Integration
+
+Application deployment shall be automated using GitHub Actions.
+
+Deployment workflow
+
+```
+Developer
+
+↓
+
+GitHub Repository
+
+↓
+
+GitHub Actions
+
+↓
+
+AWS Production Environment
+```
+
+---
+
+## BR-10 Production Application
+
+The infrastructure shall support deployment of a modern web application.
 
 Technology stack
 
@@ -170,31 +233,15 @@ Database
 
 - PostgreSQL
 
----
+Supporting Services
 
-## BR-09 Continuous Integration
-
-Application deployment shall be automated using GitHub Actions.
-
-Deployment workflow
-
-Developer
-
-↓
-
-GitHub Repository
-
-↓
-
-GitHub Actions
-
-↓
-
-AWS Production
+- Application Load Balancer
+- Amazon ECS
+- CloudWatch
 
 ---
 
-## BR-10 Monitoring
+## BR-11 Infrastructure Monitoring
 
 The environment shall support infrastructure monitoring.
 
@@ -206,20 +253,28 @@ Azure
 
 - Azure Monitor
 
-Future enhancements may include centralized dashboards and alerting.
+Future enhancements include:
+
+- Centralized dashboards
+- Alerting
+- Performance monitoring
 
 ---
 
-## BR-11 Documentation
+## BR-12 Documentation
 
-The project shall include complete technical documentation covering:
+The project shall maintain complete technical documentation covering:
 
+- Business Requirements
 - Architecture
-- Networking
-- VPN Configuration
+- AWS Infrastructure
+- Azure Infrastructure
+- On-Premises Infrastructure
 - Routing
-- Identity Services
-- Deployment
+- WireGuard
+- Active Directory
+- Windows Workstations
+- Security
 - Testing
 - Troubleshooting
 
@@ -229,23 +284,38 @@ The project shall include complete technical documentation covering:
 
 ## Networking
 
-The platform shall:
+The solution shall:
 
 - Connect AWS, Azure, and On-Premises
-- Support secure VPN tunnels
-- Support static routing
-- Support encrypted communication
+- Support encrypted VPN tunnels
+- Support enterprise routing
+- Support private network communication
+- Support DNS resolution across environments
 
 ---
 
 ## Identity
 
-The platform shall:
+The solution shall:
 
 - Authenticate enterprise users
-- Manage security groups
-- Apply Group Policy
-- Support Windows domain authentication
+- Support Active Directory
+- Manage Organizational Units
+- Manage Security Groups
+- Support Windows authentication
+- Support domain-joined workstations
+
+---
+
+## Infrastructure
+
+The solution shall:
+
+- Route traffic between enterprise networks
+- Support Linux gateways
+- Support Windows workstations
+- Support cloud networking
+- Support secure remote administration
 
 ---
 
@@ -254,8 +324,9 @@ The platform shall:
 The platform shall:
 
 - Support software development
-- Maintain version control
-- Support automated deployment
+- Support Git version control
+- Support CI/CD
+- Support future application deployment
 
 ---
 
@@ -264,9 +335,10 @@ The platform shall:
 The platform shall:
 
 - Support penetration testing
-- Support vulnerability assessments
-- Validate production deployments
-- Isolate security testing from corporate infrastructure
+- Support vulnerability assessment
+- Support packet analysis
+- Validate enterprise connectivity
+- Isolate security testing from production infrastructure
 
 ---
 
@@ -274,18 +346,21 @@ The platform shall:
 
 ## Security
 
+The platform shall provide:
+
 - Encrypted VPN communication
 - Principle of Least Privilege
 - Secure authentication
-- Role-based access control
+- Role-Based Access Control
+- Private inter-site communication
 
 ---
 
 ## Availability
 
-Production services shall be hosted in AWS.
+Production infrastructure shall be hosted within AWS.
 
-Corporate infrastructure shall be available during development and administration activities.
+Enterprise identity services shall remain available for authentication, DNS, and administrative operations.
 
 ---
 
@@ -293,9 +368,9 @@ Corporate infrastructure shall be available during development and administratio
 
 The architecture shall support future expansion including:
 
-- Additional cloud services
-- Additional branch offices
-- Containerization
+- Additional cloud regions
+- Additional enterprise sites
+- Containerized workloads
 - Infrastructure as Code
 - Kubernetes
 
@@ -305,10 +380,11 @@ The architecture shall support future expansion including:
 
 The solution shall:
 
-- Use modular architecture
-- Maintain clear documentation
 - Follow enterprise naming standards
+- Use modular architecture
+- Maintain comprehensive documentation
 - Separate infrastructure responsibilities
+- Support repeatable deployment procedures
 
 ---
 
@@ -318,12 +394,12 @@ The solution shall:
 
 Responsible for:
 
-- Production Hosting
-- Application Deployment
-- Database
+- Production Networking
+- VPN Hub
+- Routing
+- Future Application Hosting
 - Monitoring
 - IAM
-- VPN Hub
 
 ---
 
@@ -333,10 +409,11 @@ Responsible for:
 
 - Active Directory
 - DNS
-- Group Policy
-- Developer Workstation
-- File Services
-- Internal Applications
+- Enterprise Identity
+- Windows Server
+- Windows Workstations
+- Future Group Policy
+- Future File Services
 
 ---
 
@@ -344,11 +421,13 @@ Responsible for:
 
 Responsible for:
 
-- Security Testing
-- Penetration Testing
-- Vulnerability Assessment
-- Network Analysis
-- Production Validation
+- VMware Infrastructure
+- Ubuntu Gateway
+- Windows 11 Enterprise
+- Kali Linux
+- Security Operations
+- Remote Administration
+- Infrastructure Validation
 
 ---
 
@@ -356,26 +435,37 @@ Responsible for:
 
 The project will be considered successful when it demonstrates:
 
-## Infrastructure
+## Networking
 
-- Hybrid cloud deployment
-- Secure VPN connectivity
-- Enterprise networking
+- Hybrid cloud connectivity
+- Enterprise routing
+- Secure WireGuard VPN
+- Cross-site DNS
+- Cross-site authentication
 
 ---
 
 ## Identity
 
 - Active Directory deployment
-- Domain-joined Windows 11 workstation
-- Enterprise user management
+- Enterprise users
+- Organizational Units
+- Domain-joined Windows workstations
+
+---
+
+## Infrastructure
+
+- AWS production networking
+- Azure enterprise services
+- On-premises enterprise lab
 
 ---
 
 ## Development
 
-- Developer workstation
 - GitHub integration
+- Enterprise development workstation
 - CI/CD pipeline
 
 ---
@@ -384,23 +474,27 @@ The project will be considered successful when it demonstrates:
 
 - React application
 - FastAPI backend
-- PostgreSQL database
-- AWS deployment
+- PostgreSQL deployment
+- Automated deployment
 
 ---
 
 ## Security
 
-- Security testing completed
-- Vulnerability assessment completed
-- Production validation completed
+- Network validation
+- Vulnerability assessment
+- Application testing
+- Infrastructure verification
 
 ---
 
 # Future Business Enhancements
 
-Future phases of the project may include:
+Future project phases may include:
 
+- Windows File Server
+- Group Policy
+- Internal Application Server
 - Microsoft Entra ID
 - AWS IAM Identity Center
 - Docker
@@ -409,14 +503,16 @@ Future phases of the project may include:
 - Azure Bastion
 - Prometheus
 - Grafana
-- SIEM Integration
 - Centralized Logging
+- SIEM Integration
 - Web Application Firewall (WAF)
 
 ---
 
 # Summary
 
-The Enterprise Hybrid Cloud Platform is designed to replicate the infrastructure of a modern enterprise by separating production workloads, corporate IT services, and security operations into dedicated environments.
+The Enterprise Hybrid Cloud Platform replicates the infrastructure of a modern enterprise by separating production services, corporate IT, and security operations into dedicated environments connected through a secure hybrid cloud network.
 
-AWS hosts the customer-facing production application, Azure provides enterprise identity and developer services, and the on-premises environment serves as a dedicated security operations lab. Together, these environments demonstrate enterprise networking, cloud engineering, systems administration, DevOps, and cybersecurity within a unified hybrid cloud architecture.
+AWS provides production networking and future application hosting, Azure delivers centralized identity and enterprise services, and the on-premises environment supports enterprise workstations, remote administration, and security operations.
+
+The completed networking foundation includes enterprise routing, WireGuard VPN connectivity, Active Directory, DNS, domain-joined Windows workstations, and validated communication between all environments. Future phases will expand the platform with application hosting, enterprise services, CI/CD automation, monitoring, and security testing.

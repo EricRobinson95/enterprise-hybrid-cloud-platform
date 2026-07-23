@@ -1,53 +1,60 @@
-# Network Architecture
+# 03 - Network Architecture
 
-## Overview
+# Overview
 
-This project implements a production-style hybrid cloud architecture connecting Amazon Web Services (AWS), Microsoft Azure, and an on-premises VMware environment through an encrypted WireGuard hub-and-spoke VPN topology.
+The Enterprise Hybrid Cloud Platform implements a production-style hybrid cloud network connecting Amazon Web Services (AWS), Microsoft Azure, and an on-premises VMware environment through an encrypted WireGuard hub-and-spoke VPN.
 
-AWS functions as the central networking hub while Azure and the on-premises environment operate as spoke sites. All inter-site traffic traverses the AWS WireGuard gateway, eliminating the need for direct tunnels between Azure and the on-premises network.
+AWS functions as the central routing hub while Azure and the on-premises environment operate as spoke sites. All inter-site communication traverses the AWS WireGuard gateway, providing centralized routing, simplified management, and secure encrypted communication between enterprise locations.
 
-The environment simulates an enterprise infrastructure supporting identity services, application hosting, hybrid networking, secure remote administration, and future production workloads.
+The architecture simulates a real-world enterprise network supporting centralized identity management, hybrid cloud networking, Windows administration, Linux routing, secure remote administration, and future production application hosting.
 
 ---
 
-# Architecture Summary
+# Network Summary
 
-| Environment | Network |
-|------------|------------|
-| AWS | 10.0.0.0/16 |
-| Azure | 10.1.0.0/16 |
-| On-Premises | 10.2.0.0/16 |
+| Environment | CIDR |
+|-------------|-------------|
+| AWS Production | 10.0.0.0/16 |
+| Azure Enterprise | 10.1.0.0/16 |
+| On-Premises Enterprise | 10.2.0.0/16 |
 | WireGuard Tunnel | 172.16.100.0/24 |
 
 ---
 
-# Hub-and-Spoke VPN Design
+# Enterprise Network Topology
 
 ```
-                     Internet
-                         │
-                    Cloudflare DNS
-                         │
-                AWS WireGuard Hub
-                 172.16.100.1
-                         │
-          ┌──────────────┴──────────────┐
-          │                             │
-          │                             │
- Azure WireGuard                 On-Premises WireGuard
- 172.16.100.2                     172.16.100.3
-      │                               │
- Azure Network                  VMware Network
-10.1.0.0/16                     10.2.0.0/16
+                          Internet
+                              │
+                       Cloudflare DNS
+                              │
+                              ▼
+
+                 AWS Production Environment
+                   WireGuard VPN Hub
+                     10.0.0.0/16
+                    WG: 172.16.100.1
+                              │
+          ┌───────────────────┴───────────────────┐
+          │                                       │
+          ▼                                       ▼
+
+ Azure Enterprise                     On-Premises Enterprise
+     10.1.0.0/16                           10.2.0.0/16
+
+ WireGuard Gateway                     Ubuntu WireGuard Gateway
+ Windows Server 2025                   VMware Workstation
+ Active Directory                      Windows 11 Enterprise
+ DNS                                  Kali Linux
 ```
 
-AWS advertises both remote networks and performs routing between them.
-
-Azure and the on-premises environment never communicate directly across the Internet.
+All inter-site communication is routed through the AWS WireGuard hub.
 
 ---
 
-# AWS Cloud Architecture
+# AWS Production Network
+
+AWS serves as the production networking hub for the hybrid cloud.
 
 ## VPC
 
@@ -55,63 +62,68 @@ Azure and the on-premises environment never communicate directly across the Inte
 10.0.0.0/16
 ```
 
-### Public Subnet
+---
+
+## Public Subnet
 
 ```
 10.0.1.0/24
 ```
 
-Resources
+Current Resources
 
 - Internet Gateway
-- Application Load Balancer
-- Ubuntu EC2 WireGuard VPN Gateway
+- Ubuntu WireGuard Gateway
+- SSH Administration
 
-Ubuntu VPN Gateway
+Gateway Interfaces
 
 ```
-eth0 10.0.1.40
-wg0 172.16.100.1
+eth0    10.0.1.40
+wg0     172.16.100.1
 ```
 
 Responsibilities
 
 - WireGuard Hub
+- VPN Termination
 - Linux IP Forwarding
 - Packet Routing
-- VPN Termination
-- Route Advertisement
-- NAT
+- Static Routing
 - SSH Administration
 
 ---
 
-### Private Application Subnet
+## Private Application Subnet
 
 ```
 10.0.2.0/24
 ```
 
-Resources
+Future Resources
 
-- Amazon ECS Cluster
-- Future containerized applications
+- Amazon ECS
+- FastAPI Backend
+- React Services
 
 ---
 
-### Private Database Subnet
+## Private Database Subnet
 
 ```
 10.0.3.0/24
 ```
 
-Resources
+Future Resources
 
-- Amazon RDS PostgreSQL
+- PostgreSQL
+- Amazon RDS
 
 ---
 
-# Azure Cloud Architecture
+# Azure Enterprise Network
+
+Azure provides centralized enterprise services.
 
 ## Virtual Network
 
@@ -121,75 +133,75 @@ Resources
 
 ---
 
-### Public Subnet
+## Gateway Subnet
 
 ```
 10.1.1.0/24
 ```
 
-Resources
-
-Ubuntu WireGuard Gateway
+Gateway Interfaces
 
 ```
-eth0 10.1.1.4
-wg0 172.16.100.2
+eth0    10.1.1.4
+wg0     172.16.100.2
 ```
 
 Responsibilities
 
-- Azure VPN Gateway
-- Secure routing to AWS
-- Secure routing to On-Premises
+- WireGuard Gateway
+- Secure Routing
+- Linux IP Forwarding
 
 ---
 
-### Identity Services Subnet
+## Identity Services Subnet
 
 ```
 10.1.2.0/24
 ```
 
-Resources
+Current Resources
 
 - Windows Server 2025
 - Active Directory Domain Services
 - DNS
 - Organizational Units
-- User Accounts
+- Enterprise Users
 - Security Groups
 
 ---
 
-### Client Subnet
+## Enterprise Client Subnet
 
 ```
 10.1.3.0/24
 ```
 
-Planned Resources
+Current Resources
 
-- Windows 11 Enterprise Client
+- Windows 11 Enterprise
 - Domain Joined Workstation
 
 ---
 
-### Infrastructure Services Subnet
+## Infrastructure Services Subnet
 
 ```
 10.1.4.0/24
 ```
 
-Planned Resources
+Future Resources
 
 - Windows File Server
 - Internal Application Server
 
 ---
 
-# On-Premises Architecture
+# On-Premises Enterprise Network
 
-## VMware VMnet8 Network
+The on-premises environment simulates an enterprise office and security operations center.
+
+## VMware Network
 
 ```
 10.2.0.0/16
@@ -197,66 +209,68 @@ Planned Resources
 
 ---
 
-### Public Subnet
+## Gateway Subnet
 
 ```
 10.2.1.0/24
 ```
 
-Resources
-
-Ubuntu WireGuard Gateway
+Gateway Interfaces
 
 ```
-eth0 10.2.1.12
-wg0 172.16.100.3
+eth0    10.2.1.12
+wg0     172.16.100.3
 ```
 
 Responsibilities
 
-- VPN Gateway
-- Linux Router
+- WireGuard Gateway
+- Enterprise Routing
 - Secure SSH Administration
 
 ---
 
-### Security Operations Subnet
+## Security Operations Subnet
 
 ```
 10.2.2.0/24
 ```
 
-Resources
+Current Resources
 
 - Kali Linux
 
 Purpose
 
-- Penetration Testing
-- Security Assessments
-- Burp Suite Testing
-- SSH Administration
+- Vulnerability Assessment
+- Network Analysis
+- Burp Suite
+- OWASP ZAP
 
 ---
 
-### Test Lab Subnet
+## Enterprise Workstation Subnet
 
 ```
 10.2.3.0/24
 ```
 
-Resources
+Current Resources
 
-- Windows Test Workstation
+- Windows 11 Enterprise
+- Domain Joined Workstation
 
 Purpose
 
-- Application Testing
-- Production Validation
+- Enterprise Administration
+- Application Validation
+- Cross-Site Authentication
 
 ---
 
-# WireGuard Tunnel Network
+# WireGuard VPN
+
+Tunnel Network
 
 ```
 172.16.100.0/24
@@ -264,17 +278,25 @@ Purpose
 
 | Device | Tunnel Address |
 |----------|----------------|
-| AWS Hub | 172.16.100.1 |
+| AWS Gateway | 172.16.100.1 |
 | Azure Gateway | 172.16.100.2 |
 | On-Premises Gateway | 172.16.100.3 |
 
 ---
 
-# Advertised Networks
+# Enterprise Routing
 
-## AWS Hub
+The routing infrastructure provides Layer 3 connectivity between every enterprise network.
 
-Advertises
+## AWS
+
+Routing Components
+
+- VPC Route Tables
+- Linux Routing
+- WireGuard
+
+Advertised Networks
 
 ```
 10.1.0.0/16
@@ -283,211 +305,282 @@ Advertises
 
 ---
 
-## Azure Gateway
+## Azure
 
-Advertises
+Routing Components
+
+- User Defined Routes (UDRs)
+- Linux Routing
+- WireGuard
+
+Advertised Networks
 
 ```
 10.0.0.0/16
 10.2.0.0/16
-172.16.100.1/32
-172.16.100.3/32
 ```
 
 ---
 
-## On-Premises Gateway
+## On-Premises
 
-Advertises
+Routing Components
+
+- Linux Static Routes
+- Windows Persistent Routes
+- WireGuard
+
+Advertised Networks
 
 ```
 10.0.0.0/16
 10.1.0.0/16
-172.16.100.1/32
-172.16.100.2/32
 ```
 
 ---
 
-# Routing
+# Enterprise Services
 
-AWS
+## AWS
 
-```
-10.1.0.0/16 → Azure
-10.2.0.0/16 → On-Premises
-```
+Current
 
-Azure
-
-```
-10.0.0.0/16 → AWS
-10.2.0.0/16 → AWS
-```
-
-On-Premises
-
-```
-10.0.0.0/16 → AWS
-10.1.0.0/16 → AWS
-```
-
----
-
-# Network Services
-
-AWS
-
+- WireGuard VPN Hub
+- Linux Router
 - Internet Gateway
-- Application Load Balancer
-- WireGuard VPN
-- Amazon ECS
-- Amazon RDS
 
-Azure
+Future
+
+- React
+- FastAPI
+- PostgreSQL
+- Application Load Balancer
+- CloudWatch
+
+---
+
+## Azure
+
+Current
 
 - Active Directory
 - DNS
 - Windows Server 2025
-- Azure Route Tables
-- Network Security Groups
+- Enterprise Users
+- Organizational Units
+- Security Groups
 
-On-Premises
+Future
 
-- VMware Workstation
+- File Server
+- Group Policy
+- Internal Applications
+
+---
+
+## On-Premises
+
+Current
+
+- VMware
+- Ubuntu Gateway
+- Windows 11 Enterprise
 - Kali Linux
-- Ubuntu VPN Gateway
-- Test Workstation
+
+Future
+
+- Security Automation
+- Network Monitoring
 
 ---
 
-# Connectivity Validation
+# Network Validation
 
-The following tests have been successfully completed.
+The networking infrastructure has been validated through end-to-end testing.
 
-## VPN Handshakes
+## WireGuard
 
-✅ AWS ↔ Azure
+Validated
 
-✅ AWS ↔ On-Premises
+- AWS ↔ Azure
+- AWS ↔ On-Premises
 
----
-
-## Routing
-
-Verified
-
-```
-ip route
-```
-
-on
-
-- AWS
-- Azure
-- On-Premises
-
----
-
-## WireGuard Status
-
-Verified
+Verification
 
 ```
 wg
 ```
 
-on
+---
 
-- AWS
-- Azure
-- On-Premises
+## Routing
+
+Validated
+
+- AWS Route Tables
+- Azure User Defined Routes
+- Linux Static Routes
+- Windows Persistent Routes
+
+Verification
+
+```
+ip route
+route print
+```
 
 ---
 
-## Tunnel Configuration
+## Connectivity
 
-Verified
+Validated
+
+- AWS → Azure
+- Azure → AWS
+- AWS → On-Premises
+- On-Premises → AWS
+- Azure → On-Premises
+- On-Premises → Azure
+
+Verification
 
 ```
-wg0.conf
+ping
 ```
-
-on all VPN gateways.
 
 ---
 
-## ICMP Testing
+## Path Validation
 
-Successful
+Validated
 
-AWS → Azure
+- Cross-site routing
 
-Azure → AWS
+Verification
 
-AWS → On-Premises
-
-On-Premises → AWS
-
-Azure → On-Premises
-
-On-Premises → Azure
+```
+tracert
+```
 
 ---
 
-## Packet Capture
+## DNS Validation
 
-Traffic verified using
+Validated
+
+- Cross-site DNS resolution
+
+Verification
 
 ```
-tcpdump
+nslookup
 ```
-
-showing encrypted ICMP packets traversing the WireGuard tunnel.
 
 ---
 
-# Current Project Status
+## Active Directory
 
-Completed
+Validated
 
-- AWS Network
-- Azure Network
-- On-Premises Network
-- Hub-and-Spoke VPN
-- WireGuard Routing
-- Linux Routing
-- AWS EC2
-- Azure VM
-- VMware Gateway
-- Active Directory Installation
-- DNS Installation
-- User Creation
-- Organizational Units
-- Security Groups
-- Secure SSH Access
-- Cross-site Connectivity Validation
+- Domain Authentication
+- Enterprise Users
+- Domain Joined Windows 11 Workstations
 
-Remaining
+Verification
 
-- Azure Windows 11 Client
-- On-Premises Windows 11 Client
-- Domain Join Workstations
-- Group Policy Validation
-- File Server Deployment
-- Internal Application Server Deployment
+```
+whoami
+Get-ADUser
+Get-ADComputer
+```
+
+---
+
+## Secure Administration
+
+Validated
+
+- SSH administration
+- Windows Remote Desktop
+- Cross-site management
 
 ---
 
 # Architecture Highlights
 
+- Hybrid Cloud Architecture
 - Enterprise Hub-and-Spoke VPN
 - Multi-Cloud Networking
-- Hybrid Cloud Architecture
 - WireGuard Site-to-Site VPN
-- Active Directory Identity Services
-- Cross-Cloud Routing
-- Linux VPN Gateways
-- AWS + Azure + VMware Integration
-- Secure Enterprise Segmentation
-- Production-Style Network Design
+- AWS Route Tables
+- Azure User Defined Routes
+- Linux Routing
+- Windows Persistent Routes
+- Active Directory Domain Services
+- Enterprise DNS
+- Domain Joined Windows 11 Workstations
+- Cross-Site Authentication
+- Cross-Site DNS Resolution
+- Secure Remote Administration
+- VMware Enterprise Lab
+
+---
+
+# Current Status
+
+## Completed
+
+### Networking
+
+- AWS Production Network
+- Azure Enterprise Network
+- On-Premises Enterprise Network
+- WireGuard Hub-and-Spoke VPN
+- Enterprise Routing
+- Linux IP Forwarding
+- AWS Route Tables
+- Azure User Defined Routes
+- Windows Persistent Routes
+- Cross-Site Connectivity
+
+### Identity
+
+- Windows Server 2025
+- Active Directory Domain Services
+- DNS
+- Organizational Units
+- Enterprise Users
+- Security Groups
+- Domain Joined Windows 11 Workstations
+
+### Validation
+
+- WireGuard Tunnel Verification
+- Routing Verification
+- ICMP Connectivity
+- Route Tracing
+- DNS Resolution
+- Active Directory Authentication
+- Secure SSH Administration
+
+---
+
+# Future Expansion
+
+- Windows File Server
+- Group Policy
+- Internal Application Server
+- React Frontend
+- FastAPI Backend
+- PostgreSQL
+- GitHub Actions Deployment
+- Cloud Monitoring
+- Security Automation
+
+---
+
+# Summary
+
+The Enterprise Hybrid Cloud Platform implements a secure, production-style hybrid cloud architecture that integrates AWS, Azure, and an on-premises enterprise environment through an encrypted WireGuard hub-and-spoke VPN.
+
+The completed network provides enterprise routing, centralized Active Directory, DNS, domain-joined Windows workstations, cross-site authentication, secure remote administration, and validated communication between every environment. The architecture establishes a scalable networking foundation for future application hosting, DevOps automation, enterprise services, and security operations.

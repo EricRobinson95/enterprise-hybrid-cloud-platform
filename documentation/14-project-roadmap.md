@@ -1,12 +1,12 @@
-# Project Roadmap
+# 14 - Project Roadmap
 
 # Overview
 
 This roadmap outlines the implementation phases of the Enterprise Hybrid Cloud Platform.
 
-The project follows a structured approach similar to a real enterprise deployment, beginning with hybrid cloud networking and progressing through identity management, enterprise workstations, application development, cloud deployment, DevOps automation, security validation, and operational monitoring.
+The project follows a structured deployment lifecycle modeled after a modern enterprise infrastructure implementation. Development begins with hybrid cloud networking and identity services before progressing through enterprise infrastructure, application development, DevOps automation, security validation, monitoring, and infrastructure automation.
 
-Each phase builds upon the previous one to create a secure, scalable, and production-ready hybrid cloud environment.
+Each phase builds upon the previous phase to create a secure, scalable, production-style hybrid cloud environment spanning Amazon Web Services (AWS), Microsoft Azure, and an on-premises VMware enterprise network.
 
 ---
 
@@ -14,9 +14,11 @@ Each phase builds upon the previous one to create a secure, scalable, and produc
 
 ## Current Phase
 
-**Phase 3 – Enterprise Workstations**
+**Phase 4 – Enterprise Infrastructure Services**
 
-The hybrid cloud networking infrastructure and core enterprise identity services have been successfully deployed. Current development focuses on deploying Windows 11 Enterprise clients, joining them to Active Directory, and validating hybrid authentication across the VPN.
+The hybrid cloud networking platform, enterprise identity services, and Windows enterprise workstations have been successfully deployed and validated.
+
+Current development focuses on deploying enterprise infrastructure services that will support the production application.
 
 ---
 
@@ -26,14 +28,14 @@ The hybrid cloud networking infrastructure and core enterprise identity services
 |--------|--------|
 | Phase 1 – Hybrid Cloud Networking | ✅ Complete |
 | Phase 2 – Enterprise Identity Services | ✅ Complete |
-| Phase 3 – Enterprise Workstations | 🔄 In Progress |
-| Phase 4 – Infrastructure Services | ⏳ Planned |
+| Phase 3 – Enterprise Workstations | ✅ Complete |
+| Phase 4 – Enterprise Infrastructure Services | 🔄 In Progress |
 | Phase 5 – Web Application Development | ⏳ Planned |
 | Phase 6 – AWS Production Deployment | ⏳ Planned |
-| Phase 7 – CI/CD Pipeline | ⏳ Planned |
+| Phase 7 – DevOps & CI/CD | ⏳ Planned |
 | Phase 8 – Security Operations | ⏳ Planned |
 | Phase 9 – Monitoring & Operations | ⏳ Planned |
-| Phase 10 – Future Enhancements | ⏳ Planned |
+| Phase 10 – Infrastructure Automation & Future Enhancements | ⏳ Planned |
 
 ---
 
@@ -41,48 +43,52 @@ The hybrid cloud networking infrastructure and core enterprise identity services
 
 ## Objectives
 
-Build the networking foundation connecting AWS, Azure, and the on-premises VMware environment.
+Build the networking foundation connecting AWS, Azure, and the on-premises enterprise environment.
 
 ## Completed
 
 ### AWS
 
-- Virtual Private Cloud (VPC)
-- Public and Private Subnets
+- Virtual Private Cloud
+- Public & Private Subnets
+- Internet Gateway
 - WireGuard VPN Hub
 - Linux Routing
 - IP Forwarding
-- NAT Configuration
+- Security Groups
+- Route Tables
 
 ### Azure
 
 - Virtual Network
-- Subnet Architecture
+- Enterprise Subnet Design
 - Ubuntu WireGuard Gateway
 - User Defined Routes
+- Route Table Associations
 - Network Security Groups
 
 ### On-Premises
 
 - Ubuntu WireGuard Gateway
-- VMware Networking
+- VMware Enterprise Network
 - Linux Routing
+- Windows Persistent Routes
 
 ### VPN
 
-- Hub-and-Spoke Topology
-- WireGuard Site-to-Site VPN
-- End-to-End Connectivity
-- Route Validation
-- Packet Capture Validation
-- Architecture Documentation
+- WireGuard Hub-and-Spoke VPN
+- End-to-End Routing
+- Packet Forwarding
+- Cross-site Connectivity
+- Cross-site DNS
+- Network Documentation
 
 ## Deliverables
 
-- Secure hybrid cloud connectivity
-- Enterprise network architecture
-- Site-to-site VPN
-- Network documentation
+- Secure Hybrid Cloud Network
+- Enterprise Routing
+- WireGuard VPN
+- Infrastructure Documentation
 
 **Status:** ✅ Complete
 
@@ -92,39 +98,36 @@ Build the networking foundation connecting AWS, Azure, and the on-premises VMwar
 
 ## Objectives
 
-Deploy centralized identity services within Microsoft Azure.
+Deploy centralized enterprise identity management within Microsoft Azure.
 
 ## Completed
 
 ### Windows Server 2025
 
 - Virtual Machine Deployment
-- Static Private IP
-- Windows Server Configuration
+- Static IP Configuration
+- Server Hardening
 
 ### Active Directory
 
-- Active Directory Domain Services
-- New Forest
+- Forest
+- Domain
 - Organizational Units
-- Administrative User
-- Administrative Security Group
+- Enterprise Users
+- Security Groups
+- Computer Objects
 
 ### DNS
 
-- DNS Server Installation
 - Active Directory Integrated DNS
-
-## Remaining
-
-- Group Policy Objects
+- Enterprise Name Resolution
+- Cross-site DNS
 
 ## Deliverables
 
 - Enterprise Active Directory
-- DNS
-- Identity Management
-- Security Groups
+- Enterprise DNS
+- Centralized Identity Management
 
 **Status:** ✅ Complete
 
@@ -134,61 +137,57 @@ Deploy centralized identity services within Microsoft Azure.
 
 ## Objectives
 
-Deploy enterprise Windows workstations and validate hybrid identity.
+Deploy managed Windows enterprise workstations and validate hybrid authentication.
 
-## Current Tasks
+## Completed
 
 ### Azure
 
-- Deploy Windows 11 Enterprise VM
-- Join workstation to Active Directory
-- Verify DNS
-- Verify authentication
-- Test Group Policy
+- Windows 11 Enterprise
+- Domain Joined
+- Enterprise Authentication
+- DNS Validation
 
 ### On-Premises
 
-- Deploy Windows 11 Enterprise VM
-- Join workstation to Active Directory
-- Verify authentication across the VPN
-- Validate hybrid connectivity
+- Windows 11 Enterprise
+- Domain Joined
+- Cross-site Authentication
+- Hybrid Connectivity
 
-### Management Tools
+### Enterprise Management
 
 - Visual Studio Code
 - Git
 - Python
-- Node.js
-- Docker Desktop
-- AWS CLI
-- Azure CLI
+- PowerShell
+- Windows Administration Tools
 
 ## Deliverables
 
-- Domain-joined Azure workstation
-- Domain-joined On-Premises workstation
-- Hybrid authentication
-- Cross-site Active Directory validation
+- Domain-Joined Workstations
+- Cross-site Authentication
+- Hybrid Identity Validation
 
-**Status:** 🔄 In Progress
+**Status:** ✅ Complete
 
 ---
 
-# Phase 4 – Infrastructure Services
+# Phase 4 – Enterprise Infrastructure Services
 
 ## Objectives
 
 Deploy supporting enterprise infrastructure.
 
-## Planned
+## Current Tasks
 
 - Windows File Server
-- Internal Application Server
-- Shared Storage
-- File Shares
+- Shared SMB File Shares
 - NTFS Permissions
-- SMB Access
-- File Access Validation
+- Department File Shares
+- Internal Application Server
+- Enterprise Storage
+- Access Validation
 
 ## Deliverables
 
@@ -196,7 +195,7 @@ Deploy supporting enterprise infrastructure.
 - Internal Infrastructure
 - Shared Resources
 
-**Status:** ⏳ Planned
+**Status:** 🔄 In Progress
 
 ---
 
@@ -204,7 +203,7 @@ Deploy supporting enterprise infrastructure.
 
 ## Objectives
 
-Develop the production application.
+Develop the production web application.
 
 ### Frontend
 
@@ -225,8 +224,8 @@ Develop the production application.
 
 ### Authentication
 
-- Application Authentication
 - Role-Based Authorization
+- Secure API Authentication
 
 ## Deliverables
 
@@ -242,21 +241,21 @@ Develop the production application.
 
 ## Objectives
 
-Deploy the application into AWS.
+Deploy the production application to AWS.
 
 ## Planned
 
 - Application Load Balancer
 - Amazon ECS
-- PostgreSQL
+- Amazon RDS PostgreSQL
 - Amazon S3
-- IAM Roles
+- Cloudflare DNS
 - HTTPS
-- Cloudflare Integration
+- IAM Roles
 
 ## Deliverables
 
-- Production Application
+- Production Environment
 - Public Website
 - Secure Cloud Infrastructure
 
@@ -264,18 +263,17 @@ Deploy the application into AWS.
 
 ---
 
-# Phase 7 – CI/CD Pipeline
+# Phase 7 – DevOps & CI/CD
 
 ## Objectives
 
-Automate software delivery.
+Automate application delivery.
 
 ## Planned
 
-- GitHub Repository
-- Branch Protection
 - GitHub Actions
-- Automated Build
+- Branch Protection
+- Automated Builds
 - Automated Testing
 - Automated Deployment
 
@@ -295,6 +293,10 @@ GitHub Actions
 ↓
 
 AWS Production
+
+↓
+
+Production Validation
 ```
 
 ## Deliverables
@@ -311,24 +313,23 @@ AWS Production
 
 ## Objectives
 
-Validate the deployed application using the on-premises security lab.
+Validate enterprise infrastructure and applications using the on-premises security lab.
 
-## Planned Testing
+## Planned
 
-### Network
+### Infrastructure
 
-- Host Discovery
-- Port Scanning
+- Network Discovery
 - Service Enumeration
+- Firewall Validation
 
-### Web
+### Web Security
 
 - Burp Suite
 - OWASP ZAP
-- API Testing
-- Authentication Testing
+- API Security Testing
 - Session Management
-- HTTPS Validation
+- Authentication Testing
 
 ### Vulnerability Assessment
 
@@ -351,14 +352,14 @@ Validate the deployed application using the on-premises security lab.
 
 ## Objectives
 
-Implement monitoring and operational visibility.
+Implement enterprise monitoring and operational visibility.
 
 ### AWS
 
 - CloudWatch
 - Metrics
 - Logs
-- Alerts
+- Alarms
 
 ### Azure
 
@@ -368,21 +369,21 @@ Implement monitoring and operational visibility.
 
 ### Linux
 
-- System Logs
 - WireGuard Monitoring
-- SSH Logs
+- SSH Logging
+- System Logs
 
 ## Deliverables
 
-- Monitoring Dashboard
-- Alerts
-- Operational Visibility
+- Operational Dashboard
+- Alerting
+- Monitoring
 
 **Status:** ⏳ Planned
 
 ---
 
-# Phase 10 – Future Enhancements
+# Phase 10 – Infrastructure Automation & Future Enhancements
 
 ## Cloud
 
@@ -392,7 +393,7 @@ Implement monitoring and operational visibility.
 - AWS Secrets Manager
 - AWS IAM Identity Center
 
-## DevOps
+## Infrastructure
 
 - Docker
 - Kubernetes
@@ -412,7 +413,12 @@ Implement monitoring and operational visibility.
 - SIEM
 - Multi-Factor Authentication
 - Automated Vulnerability Scanning
-- Secret Management
+
+## Deliverables
+
+- Automated Infrastructure
+- Enterprise Automation
+- Cloud-Native Operations
 
 **Status:** ⏳ Planned
 
@@ -432,19 +438,19 @@ The project will be considered complete when it demonstrates:
 ## Identity
 
 - Active Directory
-- DNS
+- Enterprise DNS
 - Group Policy
 - Domain-Joined Workstations
 
 ## Infrastructure Services
 
-- File Server
+- Windows File Server
 - Internal Application Server
 
 ## Development
 
-- Enterprise Developer Workstation
-- Standardized Development Environment
+- Enterprise Developer Environment
+- Standardized Toolchain
 
 ## Application
 
@@ -460,18 +466,27 @@ The project will be considered complete when it demonstrates:
 ## DevOps
 
 - GitHub Actions
-- Automated Deployment Pipeline
+- Automated CI/CD Pipeline
 
 ## Security
 
-- Security Testing
+- Security Validation
 - Vulnerability Assessment
-- Production Validation
+- Secure Production Deployment
+
+## Operations
+
+- Monitoring
+- Logging
+- Alerting
+- Infrastructure Automation
 
 ---
 
 # Summary
 
-The Enterprise Hybrid Cloud Platform is being developed through a series of structured implementation phases that mirror a real enterprise deployment lifecycle.
+The Enterprise Hybrid Cloud Platform has successfully completed the foundational phases of the project, including hybrid cloud networking, enterprise identity services, and Windows enterprise workstation deployment.
 
-The networking foundation has been completed with a fully operational WireGuard hub-and-spoke VPN connecting AWS, Microsoft Azure, and an on-premises VMware environment. Centralized identity services have been established through Windows Server 2025 Active Directory and DNS. The current phase focuses on deploying Windows 11 Enterprise workstations and validating hybrid authentication before expanding into enterprise infrastructure services, application deployment, DevOps automation, security operations, and production monitoring.
+The environment now provides encrypted site-to-site connectivity, centralized Active Directory authentication, enterprise DNS, domain-joined Windows workstations, and validated cross-site communication between AWS, Microsoft Azure, and the on-premises enterprise environment.
+
+The next phase focuses on deploying enterprise infrastructure services, followed by production application development, AWS deployment, DevOps automation, security testing, monitoring, and infrastructure automation. Upon completion, the project will represent a comprehensive production-style hybrid cloud environment demonstrating enterprise networking, cloud engineering, systems administration, DevOps, and cybersecurity.

@@ -1,42 +1,37 @@
-# Azure Network 
+# 06 - Azure Network
 
-## Overview
+# Overview
 
-Microsoft Azure serves as the enterprise identity and infrastructure cloud for the Enterprise Hybrid Cloud Platform. Azure hosts Active Directory Domain Services, DNS, and future Windows infrastructure while maintaining secure connectivity to AWS and the on-premises environment through an encrypted WireGuard site-to-site VPN.
+Microsoft Azure serves as the enterprise identity and infrastructure platform for the Enterprise Hybrid Cloud Platform.
 
-Current responsibilities include:
+Azure provides centralized identity management through Active Directory Domain Services (AD DS), enterprise DNS, Windows Server administration, and secure hybrid connectivity to AWS and the on-premises enterprise environment using an encrypted WireGuard site-to-site VPN.
 
-- Active Directory Domain Services
-- Enterprise DNS
-- Identity Management
-- WireGuard VPN Gateway
-- Hybrid Cloud Connectivity
-
-Future responsibilities include:
-
-- Windows File Server
-- Internal Application Server
-- Windows 11 Enterprise Client
+Azure represents the organization's corporate datacenter while AWS hosts production networking and the on-premises environment provides enterprise workstations and security operations.
 
 ---
 
 # Azure Architecture
 
 ```
-AWS WireGuard Hub
-        │
-Encrypted WireGuard Tunnel
-        │
-Azure WireGuard Gateway
-        │
-Azure VNET (10.1.0.0/16)
-        │
-──────────────────────────────
-│ Public Subnet             │
-│ Identity Services         │
-│ Client Subnet             │
-│ Infrastructure Subnet     │
-──────────────────────────────
+                 AWS WireGuard Hub
+                  172.16.100.1
+                         │
+          Encrypted WireGuard Tunnel
+                         │
+               Azure WireGuard Gateway
+                  172.16.100.2
+                         │
+              Azure Virtual Network
+                  10.1.0.0/16
+                         │
+ ┌────────────────────────────────────────────┐
+ │                                            │
+ │ Gateway Subnet         10.1.1.0/24         │
+ │ Identity Services      10.1.2.0/24         │
+ │ Enterprise Clients     10.1.3.0/24         │
+ │ Infrastructure         10.1.4.0/24         │
+ │                                            │
+ └────────────────────────────────────────────┘
 ```
 
 ---
@@ -46,15 +41,15 @@ Azure VNET (10.1.0.0/16)
 | Property | Value |
 |----------|-------|
 | Virtual Network | 10.1.0.0/16 |
-| Region | (Your Azure Region) |
-| VPN Architecture | WireGuard Spoke |
+| VPN Role | WireGuard Spoke |
 | Connected Hub | AWS |
+| Route Management | Azure User Defined Routes |
 
 ---
 
 # Azure Subnets
 
-## Public Subnet
+## Gateway Subnet
 
 ```
 10.1.1.0/24
@@ -62,8 +57,9 @@ Azure VNET (10.1.0.0/16)
 
 Purpose
 
-- WireGuard VPN Gateway
-- Public-facing management access
+- WireGuard Gateway
+- Secure VPN Connectivity
+- Linux Routing
 
 Current Resources
 
@@ -81,7 +77,7 @@ Purpose
 
 - Active Directory
 - DNS
-- Identity Services
+- Enterprise Identity Services
 
 Current Resources
 
@@ -91,7 +87,7 @@ Current Resources
 
 ---
 
-## Client Subnet
+## Enterprise Client Subnet
 
 ```
 10.1.3.0/24
@@ -99,11 +95,12 @@ Current Resources
 
 Purpose
 
-Enterprise Workstations
+- Enterprise Workstations
 
-Planned Resources
+Current Resources
 
-- Windows 11 Enterprise Client
+- Windows 11 Enterprise
+- Domain-Joined Workstation
 
 ---
 
@@ -117,7 +114,7 @@ Purpose
 
 Enterprise Infrastructure
 
-Planned Resources
+Future Resources
 
 - Windows File Server
 - Internal Application Server
@@ -130,7 +127,7 @@ Planned Resources
 
 Purpose
 
-Provides secure encrypted connectivity between Azure, AWS, and the on-premises environment.
+Provides secure encrypted connectivity between Azure, AWS, and the on-premises enterprise network.
 
 Interfaces
 
@@ -139,17 +136,24 @@ Interfaces
 | eth0 | 10.1.1.4 |
 | wg0 | 172.16.100.2 |
 
+Responsibilities
+
+- WireGuard Gateway
+- Linux Routing
+- IP Forwarding
+- VPN Termination
+- Secure SSH Administration
+
 ---
 
 # WireGuard Configuration
 
-Azure operates as a spoke within the hub-and-spoke topology.
+Azure operates as a spoke within the enterprise hub-and-spoke VPN.
 
 Connected Hub
 
-AWS
-
 ```
+AWS
 172.16.100.1
 ```
 
@@ -164,8 +168,6 @@ Allowed Networks
 ```
 10.0.0.0/16
 10.2.0.0/16
-172.16.100.1/32
-172.16.100.3/32
 ```
 
 Persistent Keepalive
@@ -173,6 +175,32 @@ Persistent Keepalive
 ```
 25 Seconds
 ```
+
+---
+
+# Enterprise Routing
+
+Azure routing consists of:
+
+- Azure User Defined Routes (UDRs)
+- Linux Static Routing
+- WireGuard Routing
+- IP Forwarding
+
+Remote Networks
+
+```
+10.0.0.0/16
+10.2.0.0/16
+```
+
+Default Gateway
+
+```
+10.1.1.1
+```
+
+The Azure route table is associated with both the Gateway Subnet and the Identity Services Subnet to enable communication between Azure resources and remote enterprise networks.
 
 ---
 
@@ -185,100 +213,114 @@ Current Roles
 - Active Directory Domain Services
 - DNS Server
 
-Configured
+Configured Services
 
-- Forest Created
-- Domain Created
+- Forest
+- Domain
 - Organizational Units
-- Administrative Security Group
-- Administrative User Account
+- Enterprise Users
+- Security Groups
+- Domain Authentication
 
-Future Configuration
+Current Organizational Units
 
-- Group Policy Objects
-- Windows 11 Domain Join
-- Additional Security Groups
-
----
-
-# Routing
-
-Azure advertises
-
-```
-10.1.0.0/16
-```
-
-Azure learns
-
-```
-10.0.0.0/16
-10.2.0.0/16
-```
-
-Example Routing Table
-
-```
-10.0.0.0/16 dev wg0
-10.2.0.0/16 dev wg0
-```
-
-Default Gateway
-
-```
-10.1.1.1
-```
+- Employees
+- Developers
+- HR
+- IT
+- Management
+- Workstations
+- Servers
+- Groups
+- Service Accounts
 
 ---
 
-# Hybrid Connectivity
+# Enterprise Workstations
 
-Azure currently has secure communication with
+Current Deployment
 
-- AWS WireGuard Gateway
-- AWS VPC
-- AWS Application Network
-- AWS Database Network
-- On-Premises WireGuard Gateway
-- Kali Linux Network
+- Windows 11 Enterprise
+- Domain Joined
+- Active Directory Authentication
+- Enterprise DNS
 
-Traffic between environments is fully encrypted using WireGuard.
+Validation
 
----
-
-# Security
-
-Azure Network Security Groups restrict access to:
-
-Allowed
-
-- SSH (22)
-- WireGuard UDP (60031)
-- RDP (3389) *(Administrative Access Only)*
-- DNS (53)
-- LDAP (389)
-- LDAPS (636)
-- Kerberos (88)
-
-Restricted
-
-- Internal Server Traffic
-- Management Interfaces
-- Administrative Services
+- Domain Login
+- Cross-site Authentication
+- DNS Resolution
 
 ---
 
 # DNS Services
 
-Current DNS Server
+Primary DNS Server
 
+```
 Windows Server 2025
+10.1.2.4
+```
 
 Responsibilities
 
 - Active Directory DNS
-- Internal Name Resolution
-- Hybrid Name Resolution (Future)
+- Enterprise Name Resolution
+- Cross-site DNS Resolution
+
+Current Validation
+
+- nslookup
+- Domain Authentication
+- Cross-site Name Resolution
+
+---
+
+# Hybrid Connectivity
+
+Azure currently communicates securely with:
+
+## AWS
+
+Current
+
+- WireGuard Gateway
+- Production Network
+
+Future
+
+- Application Services
+- Database Services
+
+---
+
+## On-Premises
+
+Current
+
+- Ubuntu WireGuard Gateway
+- Windows 11 Enterprise
+- Kali Linux
+
+Traffic between all environments traverses the encrypted WireGuard VPN.
+
+---
+
+# Security
+
+Azure Network Security Groups allow only required administrative and infrastructure services.
+
+Allowed
+
+- SSH (22)
+- WireGuard UDP (60031)
+- RDP (3389)
+- DNS (53)
+- Kerberos (88)
+- LDAP (389)
+- LDAPS (636)
+
+Administrative access is restricted to authorized management systems.
 
 ---
 
@@ -287,60 +329,119 @@ Responsibilities
 | Component | Status |
 |-----------|--------|
 | Azure Virtual Network | Complete |
-| Public Subnet | Complete |
+| Gateway Subnet | Complete |
 | Identity Services Subnet | Complete |
-| Client Subnet | Complete |
-| Infrastructure Subnet | Complete |
+| Enterprise Client Subnet | Complete |
+| Infrastructure Services Subnet | Complete |
+| Azure User Defined Routes | Complete |
+| Route Table Associations | Complete |
 | Ubuntu WireGuard Gateway | Complete |
-| WireGuard Site-to-Site VPN | Complete |
+| WireGuard VPN | Complete |
 | Windows Server 2025 | Complete |
 | Active Directory Domain Services | Complete |
 | DNS Server | Complete |
-| Administrative User | Complete |
-| Administrative Security Group | Complete |
-| Windows 11 Enterprise Client | Planned |
-| File Server | Planned |
+| Organizational Units | Complete |
+| Enterprise Users | Complete |
+| Security Groups | Complete |
+| Windows 11 Enterprise | Complete |
+| Domain Join | Complete |
+| Cross-site Authentication | Complete |
+| Cross-site DNS Resolution | Complete |
+| Windows File Server | Planned |
 | Internal Application Server | Planned |
 
 ---
 
-# Validation Performed
+# Validation
 
-The following tests have been successfully completed.
+The Azure enterprise infrastructure has been fully validated.
 
-✓ WireGuard handshake established
+## Networking
 
-✓ Azure ↔ AWS connectivity
+Verified
 
-✓ Azure ↔ On-Premises connectivity
+- WireGuard Handshakes
+- Azure ↔ AWS Connectivity
+- Azure ↔ On-Premises Connectivity
+- Route Table Validation
+- User Defined Routes
 
-✓ ICMP testing successful
+Verification
 
-✓ Routing table verification
+```
+wg
+ip route
+ping
+tracert
+```
 
-✓ WireGuard peer verification
+---
 
-✓ Active Directory installation
+## Identity
 
-✓ DNS installation
+Verified
 
-✓ Domain creation
+- Active Directory Installation
+- Domain Creation
+- Organizational Units
+- Enterprise Users
+- Security Groups
 
-✓ Administrative user creation
+Verification
 
-✓ Administrative security group creation
+```
+Get-ADUser
+Get-ADComputer
+```
+
+---
+
+## Authentication
+
+Verified
+
+- Domain Login
+- Cross-site Authentication
+
+Verification
+
+```
+whoami
+```
+
+---
+
+## DNS
+
+Verified
+
+- Enterprise DNS
+- Cross-site Name Resolution
+
+Verification
+
+```
+nslookup
+```
 
 ---
 
 # Future Enhancements
 
-Planned improvements include
+Planned improvements include:
 
-- Windows 11 domain join
-- File Server deployment
-- Internal Application Server deployment
-- Group Policy implementation
-- Azure Backup
+- Windows File Server
+- Internal Application Server
+- Group Policy
 - Azure Monitor
+- Azure Backup
 - Microsoft Defender for Servers
-- Microsoft Entra Connect
+- Microsoft Entra ID Integration
+
+---
+
+# Summary
+
+Microsoft Azure serves as the enterprise identity platform for the Enterprise Hybrid Cloud Platform by providing centralized Active Directory services, enterprise DNS, Windows Server administration, and secure hybrid connectivity to AWS and the on-premises enterprise environment.
+
+The Azure environment now includes a fully operational WireGuard gateway, enterprise routing using Azure User Defined Routes, Active Directory Domain Services, DNS, organizational units, domain-joined Windows 11 workstations, and validated cross-site authentication. This establishes the enterprise identity foundation for future infrastructure services, application hosting, and centralized management.
